@@ -14,6 +14,7 @@ set(TODO_SOURCES
     src/cliHandler.cpp
     src/settings.cpp
     src/utils.cpp
+    src/logger.cpp
 )
 
 add_executable(todo ${TODO_SOURCES})

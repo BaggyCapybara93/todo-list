@@ -1,6 +1,7 @@
 #include "fileManager.hpp"
 #include "utils.hpp"
 #include <iostream>
+#include "logger.hpp"
 #include <algorithm>
 #include <nlohmann/json.hpp>
 #include <ctime>
@@ -38,6 +39,7 @@ std::optional<std::vector<std::shared_ptr<Task>>> FileManager::loadTodoList() {
                 task.get()->setIsCompleted(j["completed"].get<bool>());
                 task.get()->setPriority(j["priority"].get<int>());
                 auto dueDateStr = j.value("dueDate", std::string(""));
+
                 if (!dueDateStr.empty()) {
                     std::tm tm = {};
                     std::istringstream ss(dueDateStr);
@@ -47,7 +49,7 @@ std::optional<std::vector<std::shared_ptr<Task>>> FileManager::loadTodoList() {
                 
                 tasks.push_back(task);
             } catch (const json::parse_error& e) {
-                std::cerr << "Error parsing JSON line: " << line << std::endl;
+                Logger::log(Logger::LogLevel::ERROR, "Error parsing JSON line: " + line);
                 continue;
             }
         }
@@ -55,7 +57,7 @@ std::optional<std::vector<std::shared_ptr<Task>>> FileManager::loadTodoList() {
         file.close();
         return tasks;
     } catch (const std::exception& e) {
-        std::cerr << "Error loading todo list: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, "Error loading todo list: " + std::string(e.what()));
         return std::nullopt;
     }
 }
@@ -83,7 +85,7 @@ bool FileManager::saveTodoList(const std::vector<std::shared_ptr<Task>>& tasks) 
         file.close();
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "Error saving todo list: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, "Error saving todo list: " + std::string(e.what()));
         return false;
     }   
 }

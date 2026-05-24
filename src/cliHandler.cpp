@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include "utils.hpp"
+#include "logger.hpp"
 #include "settings.hpp"
 
 
@@ -10,33 +11,38 @@ CLIHandler::CLIHandler(TaskManager& tm, FileManager& fm, po::variables_map confi
 }
 
 void CLIHandler::handleAddTask() {
-    std::string name, description, dueDateStr;
-    int priority;
-    
-    // Check if CLI options are provided
-    if (config_.count("name") > 0 && config_.count("description") > 0 && config_.count("due-date") > 0) {
-        // Use CLI options
-        name = config_["name"].as<std::string>();
-        description = config_["description"].as<std::string>();
-        dueDateStr = config_["due-date"].as<std::string>();
-        priority = config_.count("priority") > 0 ? config_["priority"].as<int>() : 5;
-    } else {
-        std::cerr << "Error: Missing required arguments for add task.\n";
-        std::cerr << "Use --name, --description, and --due-date flags.\n";
-        return;
-    }
+    try {
+        std::string name, description, dueDateStr;
+        int priority;
+        
+        // Check if CLI options are provided
+        if (config_.count("name") > 0 && config_.count("description") > 0 && config_.count("due-date") > 0) {
+            // Use CLI options
+            name = config_["name"].as<std::string>();
+            description = config_["description"].as<std::string>();
+            dueDateStr = config_["due-date"].as<std::string>();
+            priority = config_.count("priority") > 0 ? config_["priority"].as<int>() : 5;
+        } else {
+            Logger::log(Logger::LogLevel::WARNING, "Missing required arguments for add task.");
+            Logger::log(Logger::LogLevel::INFO, "Use --name, --description, and --due-date flags."); //Change these to not be loggged in the file or as an additional output for this
 
-    // Validate priority range
-    if (priority < 0 || priority > 10) {
-        std::cerr << "Error: Priority must be between 0 and 10." << std::endl;
-        return;
-    }
-    
-    // Convert dueDateStr to time_point
-    auto dueDate = parseDueDate(dueDateStr);
+            return;
+        }
 
-    taskManager_.addTask(name, description, priority, dueDate);
-    std::cout << "Task added successfully.\n";
+        // Validate priority range
+        if (priority < 0 || priority > 10) {
+            Logger::log(Logger::LogLevel::WARNING, "Priority must be between 0 and 10");
+            return;
+        }
+        
+        // Convert dueDateStr to time_point
+        auto dueDate = parseDueDate(dueDateStr);
+
+        taskManager_.addTask(name, description, priority, dueDate);
+        std::cout << "Task added successfully.\n";
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Unknown error adding task: " + std::string(e.what()));
+    }
 }
 
 void CLIHandler::handleListTasks() {
@@ -52,46 +58,54 @@ void CLIHandler::handleListTasks() {
 }
 
 void CLIHandler::handleCompleteTask() {
-    int id;
-    
-    // Check if CLI option is provided
-    if (config_.count("task-id") > 0) {
-        // Use CLI option
-        id = config_["task-id"].as<int>();
-    } else {
-        std::cerr << "Error: Missing required argument for complete task.\n";
-        std::cerr << "Use --task-id flag.\n";
-        return;
-    }
-    
-    if (taskManager_.completeTask(id)) {
-        std::cout << "Task ID " << id << " marked as complete.\n";
-    } else {
-        std::cout << "Error: Task ID " << id << " not found.\n";
+    try {
+        int id;
+        
+        // Check if CLI option is provided
+        if (config_.count("task-id") > 0) {
+            // Use CLI option
+            id = config_["task-id"].as<int>();
+        } else {
+            Logger::log(Logger::LogLevel::WARNING, "Missing required argument for complete task.");
+            Logger::log(Logger::LogLevel::INFO, "Use --task-id flag.");
+            return;
+        }
+        
+        if (taskManager_.completeTask(id)) {
+            std::cout << "Task ID " << id << " marked as complete.\n";
+        } else {
+            std::cout << "Error: Task ID " << id << " not found.\n";
+        }
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Unknown error completing task: " + std::string(e.what()));
     }
 }
 
 void CLIHandler::handleFileOperations() {
-    // Check if CLI option is provided
-    if (config_.count("export") > 0) {
-        // Export via CLI
-        std::cout << "Exporting tasks...\n";
-        if (fileManager_.saveTodoList(taskManager_.getTasks())) {
-            std::cout << "Tasks exported successfully to " << fileManager_.getTodoFilePath() << "\n";
+    try{
+        // Check if CLI option is provided
+        if (config_.count("export") > 0) {
+            // Export via CLI
+            std::cout << "Exporting tasks...\n";
+            if (fileManager_.saveTodoList(taskManager_.getTasks())) {
+                std::cout << "Tasks exported successfully to " << fileManager_.getTodoFilePath() << "\n";
+            } else {
+                std::cerr << "Failed to export tasks.\n";
+            }
+        } else if (config_.count("import") > 0) {
+            // Import via CLI
+            std::cout << "Importing tasks...\n";
+            if (fileManager_.loadTodoList()) {
+                std::cout << "Tasks imported successfully.\n";
+            } else {
+                Logger::log(Logger::LogLevel::ERROR, "Failed to import tasks.");
+            }
         } else {
-            std::cerr << "Error: Failed to export tasks.\n";
+            Logger::log(Logger::LogLevel::WARNING, "Missing required argument for file operations.");
+            Logger::log(Logger::LogLevel::INFO, "Use --export or --import flag.");
         }
-    } else if (config_.count("import") > 0) {
-        // Import via CLI
-        std::cout << "Importing tasks...\n";
-        if (fileManager_.loadTodoList()) {
-            std::cout << "Tasks imported successfully.\n";
-        } else {
-            std::cout << "Error: Failed to import tasks.\n";
-        }
-    } else {
-        std::cerr << "Error: Missing required argument for file operations.\n";
-        std::cerr << "Use --export or --import flag.\n";
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Unknown error handling file operations: " + std::string(e.what()));
     }
 }
 
@@ -100,29 +114,32 @@ void CLIHandler::handleHelp() {
 }
 
 void CLIHandler::handleExit() {
-    std::cout << "Exiting application. Goodbye!\n";
+    Logger::log(Logger::LogLevel::INFO, "Exiting...");
     exit(0);
 }
 
 void CLIHandler::execute() {
-    if (config_.count("help") > 0) {
-        handleHelp();
-    } else if (config_.count("add") > 0) {
-        handleAddTask();
-    } else if (config_.count("list") > 0) {
-        handleListTasks();
-    } else if (config_.count("complete") > 0) {
-        handleCompleteTask();
-    } else if (config_.count("export") > 0 || config_.count("import") > 0) {
-        handleFileOperations();
-    } else if (config_.count("exit") > 0) {
-        handleExit();
-    } else {
-        std::cerr << "Error: No command specified.\n";
-        displayHelp(config_);
-        std::cerr << "Use --help for more information.\n";
-        std::cerr << "\nExiting application.\n";
-        exit(1);
+    try{
+        if (config_.count("help") > 0) {
+            handleHelp();
+        } else if (config_.count("add") > 0) {
+            handleAddTask();
+        } else if (config_.count("list") > 0) {
+            handleListTasks();
+        } else if (config_.count("complete") > 0) {
+            handleCompleteTask();
+        } else if (config_.count("export") > 0 || config_.count("import") > 0) {
+            handleFileOperations();
+        } else if (config_.count("exit") > 0) {
+            handleExit();
+        } else {
+            Logger::log(Logger::LogLevel::ERROR, "No command specified.");
+            Logger::log(Logger::LogLevel::INFO, "Use --help for more information.");
+            
+            handleExit();
+        }
+    } catch(const std::exception& e){
+        Logger::log(Logger::LogLevel::ERROR, "Unknown error occured while handling command: "+ std::string(e.what()));
     }
 }
 

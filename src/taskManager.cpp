@@ -1,6 +1,7 @@
 #include "taskManager.hpp"
 #include <iostream>
 #include "settings.hpp"
+#include "logger.hpp"
 #include "utils.hpp"
 
 // Constructor implementation
@@ -15,7 +16,7 @@ TaskManager::~TaskManager() {
             saveTasks();
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error in destructor: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, "Destructor error: " + std::string(e.what()));
     }
 }
 
@@ -26,12 +27,12 @@ void TaskManager::loadTasks() {
             tasks_.clear();
             for (const auto& task : *tasksOpt) {
                 if (setting_.maxTasksPerFile > 0 && tasks_.size() >= static_cast<size_t>(setting_.maxTasksPerFile)) {
-                    std::cerr << "Warning: Maximum tasks per file limit reached. Some tasks may not be loaded.\n";
+                    Logger::log(Logger::LogLevel::WARNING, "Maximum tasks per file limit reached. Some tasks may not be loaded.");
                     break;
                 }
 
                 if (getTask(task->getId()).has_value()){
-                    std::cerr << "Warning: Duplicate task ID " << task->getId() << " found in file. Skipping.\n";
+                    Logger::log(Logger::LogLevel::WARNING, "Duplicate task ID: " + std::to_string(task->getId()) + " found in file. Skipping.");
                     continue;
                 }
 
@@ -39,10 +40,10 @@ void TaskManager::loadTasks() {
             }
             std::cout << "Tasks loaded successfully." << std::endl;
         } else {
-            std::cerr << "Could not load tasks. Starting with an empty list." << std::endl;
+            Logger::log(Logger::LogLevel::WARNING, "Could not load tasks, starting with empty list.");
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error loading tasks: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, std::string(e.what()));
     }
 }
 
@@ -55,10 +56,10 @@ void TaskManager::saveTasks() {
         if (fileManager_.saveTodoList(tasksToSave)) {
             std::cout << "Tasks saved successfully." << std::endl;
         } else {
-            std::cerr << "Failed to save tasks." << std::endl;
+            Logger::log(Logger::LogLevel::ERROR, "Failed to save tasks");
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error saving tasks: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, std::string(e.what()));
     }
 }
 
@@ -67,7 +68,7 @@ void TaskManager::addTask(const std::string& name, const std::string& descriptio
         int taskId = nextId_++;
 
         if(priority < 0 || priority > 10) {
-            std::cerr << "Error: Priority must be between 0 and 10." << std::endl;
+            Logger::log(Logger::LogLevel::WARNING, "Priority must be between 0 and 10.");
             return;
         }
 
@@ -75,7 +76,7 @@ void TaskManager::addTask(const std::string& name, const std::string& descriptio
         tasks_[taskId] = newTask;
         saveTasks();
     } catch (const std::exception& e) {
-        std::cerr << "Error adding task: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, std::string(e.what()));
     }
 }
 
@@ -86,7 +87,7 @@ void TaskManager::deleteTask(int id) {
             saveTasks();
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error deleting task: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, std::string(e.what()));
     }
 }
 
@@ -97,7 +98,7 @@ const std::optional<std::shared_ptr<Task>> TaskManager::getTask(int id) {
             return it->second;
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error getting task: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, std::string(e.what()));
     }
     // Return nullopt for non-existent tasks
     return std::nullopt;
@@ -111,7 +112,7 @@ const std::optional<std::shared_ptr<Task>> TaskManager::getTaskName(const std::s
             }
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error getting task by name: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, std::string(e.what()));
     }
     return std::nullopt;
 }
@@ -125,7 +126,7 @@ bool TaskManager::completeTask(int id) {
             return true;
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error completing task: " << e.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, std::string(e.what()));
     }
     return false;
 }

@@ -2,12 +2,15 @@
 #include <iostream>
 #include <string>
 #include <chrono>
+#include <boost/program_options.hpp>
+
 #include "fileManager.hpp"
 #include "taskManager.hpp"
 #include "consoleUI.hpp"
 #include "cliHandler.hpp"
 #include "settings.hpp"
-#include <boost/program_options.hpp>
+#include "logger.hpp"
+
 namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
@@ -15,18 +18,15 @@ int main(int argc, char* argv[]) {
     const std::string todoFilePath = ".todo_list.txt";
     const std::string settingsFilePath = ".settings.txt";
 
-    // 1. Initialize Settings
+    // This error should be suppressed in the future 
     if (!loadSettings(settingsFilePath)) {
-        std::cout << "Using default settings." << std::endl;
+        Logger::log(Logger::LogLevel::INFO, "No settings found: using default settings.");
     }
 
-    // 2. Initialize FileManager
     FileManager fileManager(todoFilePath);
 
-    // 3. Initialize TaskManager, passing the FileManager reference
     TaskManager taskManager(fileManager);
 
-    // 4. Initialize CLI options using Boost
     po::options_description desc("Allowed options");
     desc.add_options()
         ("help,h", "Show help message")
@@ -48,8 +48,9 @@ int main(int argc, char* argv[]) {
         po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
         po::notify(vm);
     } catch (const po::error& ex) {
-        std::cerr << "Error: " << ex.what() << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, ex.what());
         std::cout << "\nUsage: " << desc << std::endl;
+        
         exit(1);
     }
 

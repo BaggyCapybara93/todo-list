@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include "logger.hpp"
 
 // Default settings
 Settings setting_;
@@ -10,7 +11,7 @@ Settings setting_;
 bool loadSettings(const std::string& settingsFilePath) {
     std::ifstream file(settingsFilePath);
     if (!file.is_open()) {
-        std::cout << "No existing settings file found. Using defaults." << std::endl;
+        Logger::log(Logger::LogLevel::INFO, "No existing settings file found. Using defaults.");
         return false;
     }
 
@@ -33,17 +34,17 @@ bool loadSettings(const std::string& settingsFilePath) {
                 try {
                     setting_.maxTasksPerFile = std::stoi(value);
                 } catch (const std::exception& e) {
-                    std::cerr << "Warning: Failed to parse line " << lineNum << ": invalid value '" << value << "' for max_tasks_per_file" << std::endl;
+                    Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for max_tasks_per_file");
                 }
             } else if (key == "enable_autosave") {
                 try {
                     setting_.enableAutosave = (value == "true" || value == "1");
                 } catch (const std::exception& e) {
-                    std::cerr << "Warning: Failed to parse line " << lineNum << ": invalid value '" << value << "' for enable_autosave" << std::endl;
+                    Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for enable_autosave");
                 }
             } else {
                 // Unknown key - skip it with a warning
-                std::cerr << "Warning: Unknown setting key '" << key << "' on line " << lineNum << ", skipping." << std::endl;
+                Logger::log(Logger::LogLevel::WARNING, "Unknown setting key '" + key + "' on line " + std::to_string(lineNum) + ", skipping.");
             }
         }
     }
@@ -55,7 +56,7 @@ bool loadSettings(const std::string& settingsFilePath) {
 bool saveSettings(const std::string& settingsFilePath) {
     std::ofstream file(settingsFilePath);
     if (!file.is_open()) {
-        std::cerr << "Error: Failed to open settings file for writing." << std::endl;
+        Logger::log(Logger::LogLevel::ERROR, "Failed to open settings file for writing.");
         return false;
     }
 
