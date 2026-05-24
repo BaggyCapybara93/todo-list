@@ -18,9 +18,6 @@ public:
     std::optional<std::vector<std::shared_ptr<Task>>> loadTodoList();
     
     bool saveTodoList(const std::vector<std::shared_ptr<Task>>& tasks);
-
-    // Helper methods
-    bool isValidFile(const std::string& path) const;
     
     std::string escapeJsonString(const std::string& str) const;
 

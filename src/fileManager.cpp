@@ -1,4 +1,5 @@
 #include "fileManager.hpp"
+#include "utils.hpp"
 #include <iostream>
 #include <algorithm>
 #include <nlohmann/json.hpp>
@@ -9,11 +10,6 @@ using json = nlohmann::json;
 
 FileManager::FileManager(const std::string& todoFilePath) : todoFilePath_(todoFilePath) {}
 
-bool FileManager::isValidFile(const std::string& path) const {
-    std::ifstream file(path);
-    return file.good();
-}
-
 std::string FileManager::escapeJsonString(const std::string& str) const {
     return nlohmann::detail::escape(str);
 }
@@ -23,7 +19,7 @@ std::optional<std::vector<std::shared_ptr<Task>>> FileManager::loadTodoList() {
         std::vector<std::shared_ptr<Task>> tasks;
         std::ifstream file(todoFilePath_);
         
-        if (!file.is_open()) {
+        if(!isValidFilePath(todoFilePath_)) {
             return std::nullopt;
         }
         
@@ -68,7 +64,7 @@ bool FileManager::saveTodoList(const std::vector<std::shared_ptr<Task>>& tasks) 
     try{
         std::ofstream file(todoFilePath_);
         
-        if (!file.is_open()) {
+        if(!isValidFilePath(todoFilePath_)) {
             return false;
         }
         

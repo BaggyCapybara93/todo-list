@@ -80,7 +80,7 @@ bool isValidFilePath(const std::string& path) {
     return true;
 }
 
-//Sanitize a file path by removing potentially dangerous characters
+//Sanitize a file path by removing potentially dangerous characters -- Not used currently, should be used with custom file paths in the future
 std::string sanitizeFilePath(const std::string& path) {
     std::string sanitized = path;
     
