@@ -13,7 +13,7 @@ set(TODO_SOURCES
     src/consoleUI.cpp
     src/cliHandler.cpp
     src/settings.cpp
-    src/dateUtils.cpp
+    src/utils.cpp
 )
 
 add_executable(todo ${TODO_SOURCES})
