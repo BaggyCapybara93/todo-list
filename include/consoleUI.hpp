@@ -26,9 +26,6 @@ private:
     // Command dispatcher map
     std::map<std::string, std::function<void()>> commandMap_;
 
-    //Helpers
-    std::chrono::system_clock::time_point parseDueDate(const std::string& dueDateStr);
-
     void initializeCommands();
     
 public:

@@ -1,7 +1,9 @@
 #include "cliHandler.hpp"
 #include <iostream>
 #include <string>
+#include "dateUtils.hpp"
 #include "settings.hpp"
+
 
 CLIHandler::CLIHandler(TaskManager& tm, FileManager& fm, po::variables_map config)
     : taskManager_(tm), fileManager_(fm), config_(config) {
@@ -31,7 +33,7 @@ void CLIHandler::handleAddTask() {
     }
     
     // Convert dueDateStr to time_point
-    auto dueDate = taskManager_.parseDueDate(dueDateStr);
+    auto dueDate = parseDueDate(dueDateStr);
 
     taskManager_.addTask(name, description, priority, dueDate);
     std::cout << "Task added successfully.\n";

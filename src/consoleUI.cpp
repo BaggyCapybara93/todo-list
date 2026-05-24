@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include "settings.hpp"
+#include "dateUtils.hpp"
 
 // Constructor implementation
 ConsoleUI::ConsoleUI(TaskManager& tm, FileManager& fm) : taskManager_(tm), fileManager_(fm) {
@@ -148,39 +149,4 @@ TaskManager& ConsoleUI::getTaskManager() {
 
 FileManager& ConsoleUI::getFileManager() {
     return fileManager_;
-}
-
-// Helper function to parse due date string to time_point
-std::chrono::system_clock::time_point ConsoleUI::parseDueDate(const std::string& dueDateStr) {
-    std::tm timeVal = {};
-    
-    // Parse YYYY-MM-DD HH:MM:SS format
-    int parsed = std::sscanf(dueDateStr.c_str(), "%d-%d-%d %d:%d:%d",
-                             &timeVal.tm_year, &timeVal.tm_mon, &timeVal.tm_mday,
-                             &timeVal.tm_hour, &timeVal.tm_min, &timeVal.tm_sec);
-    
-    if (parsed != 6) {
-        std::cerr << "Error: Invalid due date format. Expected YYYY-MM-DD HH:MM:SS, got: " << dueDateStr << std::endl;
-        // Return current time as fallback
-        return std::chrono::system_clock::now();
-    }
-    
-    // Validate date components
-    if (timeVal.tm_year < 1900 || timeVal.tm_mon < 1 || timeVal.tm_mon > 12 ||
-        timeVal.tm_mday < 1 || timeVal.tm_hour > 23 || timeVal.tm_min > 59 || timeVal.tm_sec > 59) {
-        std::cerr << "Error: Invalid date values." << std::endl;
-        return std::chrono::system_clock::now();
-    }
-    
-    // Convert to time_t
-    time_t currentTime = std::mktime(&timeVal);
-    
-    // Check if mktime succeeded
-    if (currentTime == (-1)) {
-        std::cerr << "Error: Failed to convert date to time_t." << std::endl;
-        return std::chrono::system_clock::now();
-    }
-    
-    // Convert to time_point
-    return std::chrono::system_clock::from_time_t(currentTime);
 }
