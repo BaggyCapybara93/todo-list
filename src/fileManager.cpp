@@ -23,6 +23,11 @@ std::optional<std::vector<std::shared_ptr<Task>>> FileManager::loadTodoList() {
         if(!isValidFilePath(todoFilePath_)) {
             return std::nullopt;
         }
+
+        if(!file.is_open()){
+            Logger::log(Logger::LogLevel::WARNING, "Could not open todo list file.");
+            return std::nullopt;
+        }
         
         std::string line;
         while (std::getline(file, line)) {
