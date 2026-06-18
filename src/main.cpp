@@ -41,7 +41,12 @@ int main(int argc, char* argv[]) {
         ("task-id,T", po::value<int>(), "Task ID for complete task operation")
         ("name,n", po::value<std::string>(), "Task name for add task operation")
         ("description,d", po::value<std::string>(), "Task description for add task operation")
-        ("due-date,u", po::value<std::string>(), "Due date in YYYY-MM-DD HH:MM:SS format");
+        ("due-date,u", po::value<std::string>(), "Due date in YYYY-MM-DD HH:MM:SS format for add task")
+        // Filter options for list command
+        ("due-date-min,dm", po::value<std::string>(), "Minimum due date (YYYY-MM-DD HH:MM:SS) for filtering")
+        ("due-date-max,dM", po::value<std::string>(), "Maximum due date (YYYY-MM-DD HH:MM:SS) for filtering")
+        ("priority-min,pm", po::value<int>(), "Minimum priority (0-10) for filtering")
+        ("priority-max,pM", po::value<int>(), "Maximum priority (0-10) for filtering");
 
     po::variables_map vm;
     try {

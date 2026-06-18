@@ -46,12 +46,40 @@ void CLIHandler::handleAddTask() {
 }
 
 void CLIHandler::handleListTasks() {
-    std::cout << "\n--- Pending Tasks ---\n";
-    auto pendingTasks = taskManager_.getPendingTasks();
-    if (pendingTasks.empty()) {
+    std::vector<std::shared_ptr<Task>> tasksToDisplay;
+    
+    // Check if filtering options are provided
+    bool hasDueDateMin = config_.count("due-date-min") > 0;
+    bool hasDueDateMax = config_.count("due-date-max") > 0;
+    bool hasPriorityMin = config_.count("priority-min") > 0;
+    bool hasPriorityMax = config_.count("priority-max") > 0;
+    
+    if (hasDueDateMin || hasDueDateMax || hasPriorityMin || hasPriorityMax) {
+        // Filtered list
+        std::cout << "\n--- Filtered Pending Tasks ---\n";
+        
+        auto dueDateMin = hasDueDateMin ? parseDueDate(config_["due-date-min"].as<std::string>()) : std::chrono::system_clock::time_point();
+        auto dueDateMax = hasDueDateMax ? parseDueDate(config_["due-date-max"].as<std::string>()) : std::chrono::system_clock::time_point::max();
+        int priorityMin = hasPriorityMin ? config_["priority-min"].as<int>() : 0;
+        int priorityMax = hasPriorityMax ? config_["priority-max"].as<int>() : 10;
+        
+        // Validate priority range
+        if (priorityMin < 0 || priorityMin > 10 || priorityMax < 0 || priorityMax > 10 || priorityMin > priorityMax) {
+            Logger::log(Logger::LogLevel::WARNING, "Priority must be between 0 and 10, and min must be <= max.");
+            return;
+        }
+        
+        tasksToDisplay = taskManager_.filterTasksByDueDateAndPriority(dueDateMin, dueDateMax, priorityMin, priorityMax);
+    } else {
+        // Default: show all pending tasks
+        std::cout << "\n--- Pending Tasks ---\n";
+        tasksToDisplay = taskManager_.getPendingTasks();
+    }
+    
+    if (tasksToDisplay.empty()) {
         std::cout << "No pending tasks found.\n";
     } else {
-        for (const auto& task : pendingTasks) {
+        for (const auto& task : tasksToDisplay) {
             std::cout << task->toString() << std::endl;
         }
     }
@@ -171,7 +199,14 @@ void CLIHandler::displayHelp(const po::variables_map& vm) {
     else if (vm.count("list") > 0) {
         std::cout << "List Tasks Help:\n";
         std::cout << "  List all tasks in the todo list.\n\n";
-        std::cout << "  This will display all pending and completed tasks.\n";
+        std::cout << "  Options:\n";
+        std::cout << "    Without filters: Shows all pending tasks\n\n";
+        std::cout << "    With filters: Use the following options to filter pending tasks:\n";
+        std::cout << "      --due-date-min, -dm    Minimum due date (YYYY-MM-DD HH:MM:SS)\n";
+        std::cout << "      --due-date-max, -dM    Maximum due date (YYYY-MM-DD HH:MM:SS)\n";
+        std::cout << "      --priority-min, -pm    Minimum priority (0-10)\n";
+        std::cout << "      --priority-max, -pM    Maximum priority (0-10)\n";
+        std::cout << "      Example: --list --due-date-min 2024-01-01 00:00:00 --priority-min 5\n";
     }
     else if (vm.count("complete") > 0) {
         std::cout << "Complete Task Help:\n";
