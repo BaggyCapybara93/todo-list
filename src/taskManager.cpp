@@ -131,53 +131,53 @@ bool TaskManager::completeTask(int id) {
     return false;
 }
 
-const std::vector<std::shared_ptr<Task>> TaskManager::getPendingTasks() {
-    std::vector<std::shared_ptr<Task>> pending;
+const std::shared_ptr<std::vector<std::shared_ptr<Task>>> TaskManager::getPendingTasks() {
+    auto pending = std::make_shared<std::vector<std::shared_ptr<Task>>>();
     for (const auto& pair : tasks_) {
         if (!pair.second->getIsCompleted()) { 
-            pending.push_back(pair.second);
+            pending->push_back(pair.second);
         }
     }
     return pending;
 }
 
-const std::vector<std::shared_ptr<Task>> TaskManager::getTasks() {
-    std::vector<std::shared_ptr<Task>> allTasks;
+const std::shared_ptr<std::vector<std::shared_ptr<Task>>> TaskManager::getTasks() {
+    auto allTasks = std::make_shared<std::vector<std::shared_ptr<Task>>>();
     for (const auto& pair : tasks_) {
-        allTasks.push_back(pair.second);
+        allTasks->push_back(pair.second);
     }
     return allTasks;
 }
 
-const std::vector<std::shared_ptr<Task>> TaskManager::filterTasksByDueDate(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate) {
-    std::vector<std::shared_ptr<Task>> filtered;
+const std::shared_ptr<std::vector<std::shared_ptr<Task>>> TaskManager::filterTasksByDueDate(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate) {
+    auto filtered = std::make_shared<std::vector<std::shared_ptr<Task>>>();
     for (const auto& pair : tasks_) {
         if (!pair.second->getIsCompleted() && pair.second->getDueDate() != std::chrono::system_clock::time_point()) {
             if (pair.second->getDueDate() >= minDueDate && pair.second->getDueDate() <= maxDueDate) {
-                filtered.push_back(pair.second);
+                filtered->push_back(pair.second);
             }
         }
     }
     return filtered;
 }
 
-const std::vector<std::shared_ptr<Task>> TaskManager::filterTasksByPriority(int minPriority, int maxPriority) {
-    std::vector<std::shared_ptr<Task>> filtered;
+const std::shared_ptr<std::vector<std::shared_ptr<Task>>> TaskManager::filterTasksByPriority(int minPriority, int maxPriority) {
+    auto filtered = std::make_shared<std::vector<std::shared_ptr<Task>>>();
     for (const auto& pair : tasks_) {
         if (!pair.second->getIsCompleted() && pair.second->getPriority() >= minPriority && pair.second->getPriority() <= maxPriority) {
-            filtered.push_back(pair.second);
+            filtered->push_back(pair.second);
         }
     }
     return filtered;
 }
 
-const std::vector<std::shared_ptr<Task>> TaskManager::filterTasksByDueDateAndPriority(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate, int minPriority, int maxPriority) {
-    std::vector<std::shared_ptr<Task>> filtered;
+const std::shared_ptr<std::vector<std::shared_ptr<Task>>> TaskManager::filterTasksByDueDateAndPriority(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate, int minPriority, int maxPriority) {
+    auto filtered = std::make_shared<std::vector<std::shared_ptr<Task>>>();
     for (const auto& pair : tasks_) {
         if (!pair.second->getIsCompleted() && pair.second->getDueDate() != std::chrono::system_clock::time_point()) {
             if (pair.second->getDueDate() >= minDueDate && pair.second->getDueDate() <= maxDueDate &&
                 pair.second->getPriority() >= minPriority && pair.second->getPriority() <= maxPriority) {
-                filtered.push_back(pair.second);
+                filtered->push_back(pair.second);
             }
         }
     }
@@ -186,7 +186,7 @@ const std::vector<std::shared_ptr<Task>> TaskManager::filterTasksByDueDateAndPri
 
 void TaskManager::listAllTasks() {
     std::cout << "Listing all tasks..." << std::endl;
-    for (const auto& task : getTasks()) {
+    for (const auto& task : *getTasks().get()) {
         std::cout << "ID: " << task->getId() << ", Name: " << task->getName() << std::endl;
     }
 }

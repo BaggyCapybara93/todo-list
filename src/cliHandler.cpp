@@ -46,42 +46,46 @@ void CLIHandler::handleAddTask() {
 }
 
 void CLIHandler::handleListTasks() {
-    std::vector<std::shared_ptr<Task>> tasksToDisplay;
-    
-    // Check if filtering options are provided
-    bool hasDueDateMin = config_.count("due-date-min") > 0;
-    bool hasDueDateMax = config_.count("due-date-max") > 0;
-    bool hasPriorityMin = config_.count("priority-min") > 0;
-    bool hasPriorityMax = config_.count("priority-max") > 0;
-    
-    if (hasDueDateMin || hasDueDateMax || hasPriorityMin || hasPriorityMax) {
-        // Filtered list
-        std::cout << "\n--- Filtered Pending Tasks ---\n";
+    try{
+        std::shared_ptr<std::vector<std::shared_ptr<Task>>> tasksToDisplay;
         
-        auto dueDateMin = hasDueDateMin ? parseDueDate(config_["due-date-min"].as<std::string>()) : std::chrono::system_clock::time_point();
-        auto dueDateMax = hasDueDateMax ? parseDueDate(config_["due-date-max"].as<std::string>()) : std::chrono::system_clock::time_point::max();
-        int priorityMin = hasPriorityMin ? config_["priority-min"].as<int>() : 0;
-        int priorityMax = hasPriorityMax ? config_["priority-max"].as<int>() : 10;
+        // Check if filtering options are provided
+        bool hasDueDateMin = config_.count("due-date-min") > 0;
+        bool hasDueDateMax = config_.count("due-date-max") > 0;
+        bool hasPriorityMin = config_.count("priority-min") > 0;
+        bool hasPriorityMax = config_.count("priority-max") > 0;
         
-        // Validate priority range
-        if (priorityMin < 0 || priorityMin > 10 || priorityMax < 0 || priorityMax > 10 || priorityMin > priorityMax) {
-            Logger::log(Logger::LogLevel::WARNING, "Priority must be between 0 and 10, and min must be <= max.");
-            return;
+        if (hasDueDateMin || hasDueDateMax || hasPriorityMin || hasPriorityMax) {
+            // Filtered list
+            std::cout << "\n--- Filtered Pending Tasks ---\n";
+            
+            auto dueDateMin = hasDueDateMin ? parseDueDate(config_["due-date-min"].as<std::string>()) : std::chrono::system_clock::time_point();
+            auto dueDateMax = hasDueDateMax ? parseDueDate(config_["due-date-max"].as<std::string>()) : std::chrono::system_clock::time_point::max();
+            int priorityMin = hasPriorityMin ? config_["priority-min"].as<int>() : 0;
+            int priorityMax = hasPriorityMax ? config_["priority-max"].as<int>() : 10;
+            
+            // Validate priority range
+            if (priorityMin < 0 || priorityMin > 10 || priorityMax < 0 || priorityMax > 10 || priorityMin > priorityMax) {
+                Logger::log(Logger::LogLevel::WARNING, "Priority must be between 0 and 10, and min must be <= max.");
+                return;
+            }
+            
+            tasksToDisplay = taskManager_.filterTasksByDueDateAndPriority(dueDateMin, dueDateMax, priorityMin, priorityMax);
+        } else {
+            // Default: show all pending tasks
+            std::cout << "\n--- Pending Tasks ---\n";
+            tasksToDisplay = taskManager_.getPendingTasks();
         }
         
-        tasksToDisplay = taskManager_.filterTasksByDueDateAndPriority(dueDateMin, dueDateMax, priorityMin, priorityMax);
-    } else {
-        // Default: show all pending tasks
-        std::cout << "\n--- Pending Tasks ---\n";
-        tasksToDisplay = taskManager_.getPendingTasks();
-    }
-    
-    if (tasksToDisplay.empty()) {
-        std::cout << "No pending tasks found.\n";
-    } else {
-        for (const auto& task : tasksToDisplay) {
-            std::cout << task->toString() << std::endl;
+        if (tasksToDisplay->empty()) {
+            std::cout << "No pending tasks found.\n";
+        } else {
+            for (const auto& task : *tasksToDisplay) {
+                std::cout << task->toString() << std::endl;
+            }
         }
+    }catch(const std::exception& e){
+        Logger::log(Logger::LogLevel::ERROR, "Unknown error occurred while listing tasks: " + std::string(e.what()));
     }
 }
 
@@ -115,10 +119,13 @@ void CLIHandler::handleFileOperations() {
         if (config_.count("export") > 0) {
             // Export via CLI
             std::cout << "Exporting tasks...\n";
-            if (fileManager_.saveTodoList(taskManager_.getTasks())) {
-                std::cout << "Tasks exported successfully to " << fileManager_.getTodoFilePath() << "\n";
-            } else {
-                std::cerr << "Failed to export tasks.\n";
+            auto tasks = taskManager_.getTasks();
+            if (tasks && !tasks->empty()) {
+                if (fileManager_.saveTodoList(*tasks)) {
+                    std::cout << "Tasks exported successfully to " << fileManager_.getTodoFilePath() << "\n";
+                } else {
+                    std::cerr << "Failed to export tasks.\n";
+                }
             }
         } else if (config_.count("import") > 0) {
             // Import via CLI

@@ -29,14 +29,14 @@ class TaskManager{
 
         bool completeTask(int id);
 
-        const std::vector<std::shared_ptr<Task>> getPendingTasks();
+        const std::shared_ptr<std::vector<std::shared_ptr<Task>>> getPendingTasks();
         
-        const std::vector<std::shared_ptr<Task>> getTasks();
+        const std::shared_ptr<std::vector<std::shared_ptr<Task>>> getTasks();
 
         // Filter tasks by due date and priority
-        const std::vector<std::shared_ptr<Task>> filterTasksByDueDate(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate);
-        const std::vector<std::shared_ptr<Task>> filterTasksByPriority(int minPriority, int maxPriority);
-        const std::vector<std::shared_ptr<Task>> filterTasksByDueDateAndPriority(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate, int minPriority, int maxPriority);
+        const std::shared_ptr<std::vector<std::shared_ptr<Task>>> filterTasksByDueDate(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate);
+        const std::shared_ptr<std::vector<std::shared_ptr<Task>>> filterTasksByPriority(int minPriority, int maxPriority);
+        const std::shared_ptr<std::vector<std::shared_ptr<Task>>>filterTasksByDueDateAndPriority(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate, int minPriority, int maxPriority);
 
         void listAllTasks();
         

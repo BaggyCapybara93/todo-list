@@ -53,10 +53,10 @@ void ConsoleUI::handleAddTask() {
 void ConsoleUI::handleListTasks() {
     std::cout << "\n--- Pending Tasks ---\n";
     auto pendingTasks = taskManager_.getPendingTasks();
-    if (pendingTasks.empty()) {
+    if (pendingTasks.get()->empty()) {
         std::cout << "No pending tasks found.\n";
     } else {
-        for (const auto& task : pendingTasks) {
+        for (const auto& task : *pendingTasks.get()) {
             std::cout << task.get()->toString() << std::endl;
         }
     }
@@ -114,10 +114,15 @@ void ConsoleUI::handleFileOperations() {
     if (choice == "1") {
         std::cout << "Exporting tasks...\n";
         // Export tasks using FileManager's saveTodoList method
-        if (fileManager_.saveTodoList(taskManager_.getTasks())) {
-            std::cout << "Tasks exported successfully to " << fileManager_.getTodoFilePath() << "\n";
+        auto tasks = taskManager_.getTasks();
+        if (tasks && !tasks->empty()) {
+            if (fileManager_.saveTodoList(*tasks)) {
+                std::cout << "Tasks exported successfully to " << fileManager_.getTodoFilePath() << "\n";
+            } else {
+                std::cerr << "Error: Failed to export tasks.\n";
+            }
         } else {
-            std::cerr << "Error: Failed to export tasks.\n";
+            std::cout << "No tasks to export.\n";
         }
     } else if (choice == "2") {
         std::cout << "Importing tasks...\n";
