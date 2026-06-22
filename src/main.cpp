@@ -7,7 +7,7 @@
 
 #include "fileManager.hpp"
 #include "taskManager.hpp"
-#include "consoleUI.hpp"
+#include "console/console.hpp"
 #include "cli/cli.hpp"
 #include "settings.hpp"
 #include "logger.hpp"
@@ -69,13 +69,13 @@ int main(int argc, char* argv[]) {
     // Check if menu mode is enabled via CLI
     if (vm.count("menu") > 0) {
         // Run in interactive menu mode using original ConsoleUI
-        ConsoleUI consoleUI(taskManager, fileManager);
+        Console console(taskManager, fileManager);
         while (true) {
-            consoleUI.displayMenu();
+            console.displayMenu();
             std::string input;
             std::cout << "> ";
             std::getline(std::cin, input);
-            consoleUI.handleInput(input);
+            console.handleInput(input);
         }
     } else {
         // Run with CLI options using new CLIHandler

@@ -10,13 +10,14 @@ set(TODO_SOURCES
     src/main.cpp 
     src/taskManager.cpp
     src/fileManager.cpp
-    src/consoleUI.cpp
     src/settings.cpp
     src/utils.cpp
     src/logger.cpp
     src/tagManager.cpp
     src/cli/cli_handler.cpp
     src/cli/cli.cpp
+    src/console/console.cpp
+    src/console/console_handler.cpp
 )
 
 add_executable(todo ${TODO_SOURCES})

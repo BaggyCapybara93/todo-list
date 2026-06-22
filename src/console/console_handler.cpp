@@ -1,29 +1,6 @@
-#include "consoleUI.hpp"
-#include <ctime>
-#include <iostream>
-#include <string>
-#include "settings.hpp"
-#include "utils.hpp"
+#include "console.hpp"
 
-// Constructor implementation
-ConsoleUI::ConsoleUI(std::shared_ptr<TaskManager> tm, std::shared_ptr<FileManager> fm) : taskManager_(std::move(tm)), fileManager_(std::move(fm)) {
-    initializeCommands();
-}
-
-// Initialize the command map
-void ConsoleUI::initializeCommands() {
-    commandMap_["1"] = [this]() { this->handleAddTask(); };
-    commandMap_["2"] = [this]() { this->handleListTasks(); };
-    commandMap_["3"] = [this]() { this->handleCompleteTask(); };
-    commandMap_["4"] = [this]() { this->handleAddTag(); };
-    commandMap_["5"] = [this]() { this->handleRemoveTag(); };
-    commandMap_["8"] = [this]() { this->handleFileOperations(); };
-    commandMap_["9"] = [this]() { this->handleExit(); };
-}
-
-// --- Command Handlers ---
-
-void ConsoleUI::handleAddTask() {
+void Console::handleAddTask() {
     std::cout << "--- Add Task ---\n";
     std::string name, description, dueDateStr;
     int priority;
@@ -52,7 +29,7 @@ void ConsoleUI::handleAddTask() {
     std::cout << "Task added successfully.\n";
 }
 
-void ConsoleUI::handleListTasks() {
+void Console::handleListTasks() {
     std::cout << "\n--- Pending Tasks ---\n";
     auto pendingTasks = taskManager_.get()->getPendingTasks();
     if (pendingTasks.get()->empty()) {
@@ -64,7 +41,7 @@ void ConsoleUI::handleListTasks() {
     }
 }
 
-void ConsoleUI::handleCompleteTask() {
+void Console::handleCompleteTask() {
     std::cout << "\n--- Complete Task ---\n";
     std::cout << "Enter Task ID to complete: ";
     int id;
@@ -87,7 +64,7 @@ void ConsoleUI::handleCompleteTask() {
     }
 }
 
-void ConsoleUI::handleAddTag() {
+void Console::handleAddTag() {
     std::cout << "\n--- Add Tag ---\n";
     std::string name, description;
     std::cout << "Enter tag name: ";
@@ -102,7 +79,7 @@ void ConsoleUI::handleAddTag() {
     }
 }
 
-void ConsoleUI::handleRemoveTag() {
+void Console::handleRemoveTag() {
     std::cout << "\n--- Remove Tag ---\n";
     std::cout << "Enter tag name or ID to remove: ";
     std::string input;
@@ -126,12 +103,12 @@ void ConsoleUI::handleRemoveTag() {
     }
 }
 
-void ConsoleUI::handleExit(){
+void Console::handleExit(){
     std::cout << "Exiting application. Goodbye!\n";
     exit(0);
 }
 
-void ConsoleUI::displayMenu() {
+void Console::displayMenu() {
     std::cout << "\n========================\n";
     std::cout << "       Todo List App\n";
     std::cout << "========================\n";
@@ -145,7 +122,7 @@ void ConsoleUI::displayMenu() {
     std::cout << "Enter your choice: ";
 }
 
-void ConsoleUI::handleFileOperations() {
+void Console::handleFileOperations() {
     std::cout << "\n--- File Operations ---\n";
     std::cout << "1. Export Tasks to File\n";
     std::cout << "2. Import Tasks from File\n";
@@ -182,19 +159,10 @@ void ConsoleUI::handleFileOperations() {
     }
 }
 
-void ConsoleUI::handleInput(std::string input) {
+void Console::handleInput(std::string input) {
     if (commandMap_.count(input)) {
         commandMap_[input]();
     } else {
         std::cout << "Invalid command. Please enter a number between 1 and 5.\n";
     }
-}
-
-// Getters for private members (needed for consoleUI access)
-std::shared_ptr<TaskManager> ConsoleUI::getTaskManager() {
-    return taskManager_;
-}
-
-std::shared_ptr<FileManager> ConsoleUI::getFileManager() {
-    return fileManager_;
 }
