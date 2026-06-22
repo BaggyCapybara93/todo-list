@@ -4,16 +4,18 @@
 #include <optional>
 #include "task.hpp"
 #include "fileManager.hpp"
+#include "tagManager.hpp"
 #include "settings.hpp"
 
 class TaskManager{
     private:
         int nextId_;
         std::unordered_map<int, std::shared_ptr<Task>> tasks_;
-        FileManager& fileManager_;
+        std::shared_ptr<FileManager> fileManager_;
+        std::shared_ptr<TagManager> tagManager_;
 
     public:
-        TaskManager(FileManager& fm);
+        TaskManager(std::shared_ptr<FileManager> fm, std::shared_ptr<TagManager> tm);
         
         ~TaskManager(); // Destructor for autosave
         
@@ -37,6 +39,14 @@ class TaskManager{
         const std::shared_ptr<std::vector<std::shared_ptr<Task>>> filterTasksByDueDate(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate);
         const std::shared_ptr<std::vector<std::shared_ptr<Task>>> filterTasksByPriority(int minPriority, int maxPriority);
         const std::shared_ptr<std::vector<std::shared_ptr<Task>>>filterTasksByDueDateAndPriority(const std::chrono::system_clock::time_point& minDueDate, const std::chrono::system_clock::time_point& maxDueDate, int minPriority, int maxPriority);
+
+        // Tag-related methods
+        bool addTag(const std::string& name, const std::string& description = "");
+        bool removeTag(const std::string& name = "", const int& id = -1);
+        std::shared_ptr<Tag> getTagById(const int& id);
+        std::shared_ptr<Tag> getTagByName(const std::string& name);
+        bool addTagToTask(int taskId, const std::string& tagName);
+        bool removeTagFromTask(int taskId, const std::string& tagName);
 
         void listAllTasks();
         

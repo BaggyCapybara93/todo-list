@@ -51,7 +51,8 @@ std::optional<std::vector<std::shared_ptr<Task>>> FileManager::loadTodoList() {
                     ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
                     task.get()->setDueDate(std::chrono::system_clock::from_time_t(std::mktime(&tm)));
                 }
-                
+
+                // Tags will be loaded by TaskManager
                 tasks.push_back(task);
             } catch (const json::parse_error& e) {
                 Logger::log(Logger::LogLevel::ERROR, "Error parsing JSON line: " + line);
@@ -83,6 +84,13 @@ bool FileManager::saveTodoList(const std::vector<std::shared_ptr<Task>>& tasks) 
             j["completed"] = task->getIsCompleted();
             j["priority"] = task->getPriority();
             j["dueDate"] = task->getDueDateStr();
+            
+            // Save tags for the task
+            json tagsArray = json::array();
+            for (const auto& tag : task->getTags()) {
+                tagsArray.push_back(tag->getName());
+            }
+            j["tags"] = tagsArray;
             
             file << j.dump() << "\n";
         }

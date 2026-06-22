@@ -13,8 +13,8 @@ public:
 
 class ConsoleUI {
 private:
-    TaskManager& taskManager_;
-    FileManager& fileManager_;
+    std::shared_ptr<TaskManager> taskManager_;
+    std::shared_ptr<FileManager> fileManager_;
 
     // Command handlers
     void handleAddTask();
@@ -22,6 +22,8 @@ private:
     void handleCompleteTask();
     void handleFileOperations();
     void handleExit();
+    void handleAddTag();
+    void handleRemoveTag();
 
     // Command dispatcher map
     std::map<std::string, std::function<void()>> commandMap_;
@@ -29,13 +31,13 @@ private:
     void initializeCommands();
     
 public:
-    ConsoleUI(TaskManager& tm, FileManager& fm);
+    ConsoleUI(std::shared_ptr<TaskManager> tm, std::shared_ptr<FileManager> fm);
     
     void displayMenu();
     
     void handleInput(std::string input);
     
     // Getters for private members
-    TaskManager& getTaskManager();
-    FileManager& getFileManager();
+    std::shared_ptr<TaskManager> getTaskManager();
+    std::shared_ptr<FileManager> getFileManager();
 };

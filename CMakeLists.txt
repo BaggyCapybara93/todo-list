@@ -15,6 +15,7 @@ set(TODO_SOURCES
     src/settings.cpp
     src/utils.cpp
     src/logger.cpp
+    src/tagManager.cpp
 )
 
 add_executable(todo ${TODO_SOURCES})

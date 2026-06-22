@@ -8,11 +8,11 @@
 Settings setting_;
 
 // Load settings from file
-bool loadSettings(const std::string& settingsFilePath) {
+Settings loadSettings(const std::string& settingsFilePath) {
     std::ifstream file(settingsFilePath);
     if (!file.is_open()) {
         Logger::log(Logger::LogLevel::INFO, "No existing settings file found. Using defaults.");
-        return false;
+        return setting_;
     }
 
     std::string line;
@@ -49,21 +49,21 @@ bool loadSettings(const std::string& settingsFilePath) {
         }
     }
 
-    return true;
+    return setting_;
 }
 
 // Save settings to file
-bool saveSettings(const std::string& settingsFilePath) {
+Settings saveSettings(const std::string& settingsFilePath) {
     std::ofstream file(settingsFilePath);
     if (!file.is_open()) {
         Logger::log(Logger::LogLevel::ERROR, "Failed to open settings file for writing.");
-        return false;
+        return setting_;
     }
 
     file << "max_tasks_per_file=" << setting_.maxTasksPerFile << std::endl;
     file << "enable_autosave=" << (setting_.enableAutosave ? "true" : "false") << std::endl;
 
-    return true;
+    return setting_;
 }
 
 // Get default settings path

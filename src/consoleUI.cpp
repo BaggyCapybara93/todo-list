@@ -6,7 +6,7 @@
 #include "utils.hpp"
 
 // Constructor implementation
-ConsoleUI::ConsoleUI(TaskManager& tm, FileManager& fm) : taskManager_(tm), fileManager_(fm) {
+ConsoleUI::ConsoleUI(std::shared_ptr<TaskManager> tm, std::shared_ptr<FileManager> fm) : taskManager_(std::move(tm)), fileManager_(std::move(fm)) {
     initializeCommands();
 }
 
@@ -15,8 +15,10 @@ void ConsoleUI::initializeCommands() {
     commandMap_["1"] = [this]() { this->handleAddTask(); };
     commandMap_["2"] = [this]() { this->handleListTasks(); };
     commandMap_["3"] = [this]() { this->handleCompleteTask(); };
-    commandMap_["4"] = [this]() { this->handleFileOperations(); };
-    commandMap_["5"] = [this]() { this->handleExit(); };
+    commandMap_["4"] = [this]() { this->handleAddTag(); };
+    commandMap_["5"] = [this]() { this->handleRemoveTag(); };
+    commandMap_["8"] = [this]() { this->handleFileOperations(); };
+    commandMap_["9"] = [this]() { this->handleExit(); };
 }
 
 // --- Command Handlers ---
@@ -46,13 +48,13 @@ void ConsoleUI::handleAddTask() {
     // Convert dueDateStr to time_point
     auto dueDate = parseDueDate(dueDateStr);
     
-    taskManager_.addTask(name, description, priority, dueDate);
+    taskManager_.get()->addTask(name, description, priority, dueDate);
     std::cout << "Task added successfully.\n";
 }
 
 void ConsoleUI::handleListTasks() {
     std::cout << "\n--- Pending Tasks ---\n";
-    auto pendingTasks = taskManager_.getPendingTasks();
+    auto pendingTasks = taskManager_.get()->getPendingTasks();
     if (pendingTasks.get()->empty()) {
         std::cout << "No pending tasks found.\n";
     } else {
@@ -78,10 +80,49 @@ void ConsoleUI::handleCompleteTask() {
     
     std::cin.ignore(); // Clear buffer
     
-    if (taskManager_.completeTask(id)) {
+    if (taskManager_.get()->completeTask(id)) {
         std::cout << "Task ID " << id << " marked as complete.\n";
     } else {
         std::cout << "Error: Task ID " << id << " not found.\n";
+    }
+}
+
+void ConsoleUI::handleAddTag() {
+    std::cout << "\n--- Add Tag ---\n";
+    std::string name, description;
+    std::cout << "Enter tag name: ";
+    std::getline(std::cin, name);
+    std::cout << "Enter tag description (optional): ";
+    std::getline(std::cin, description);
+    
+    if (taskManager_.get()->addTag(name, description)) {
+        std::cout << "Tag '" << name << "' added successfully.\n";
+    } else {
+        std::cout << "Failed to add tag.\n";
+    }
+}
+
+void ConsoleUI::handleRemoveTag() {
+    std::cout << "\n--- Remove Tag ---\n";
+    std::cout << "Enter tag name or ID to remove: ";
+    std::string input;
+    std::getline(std::cin, input);
+    
+    int tagId = -1;
+    std::string tagName = input;
+    
+    // Check if input is a number
+    try {
+        tagId = std::stoi(input);
+    } catch (...) {
+        // Not a number, treat as tag name
+        tagId = -1;
+    }
+    
+    if (taskManager_.get()->removeTag(tagName, tagId)) {
+        std::cout << "Tag removed successfully.\n";
+    } else {
+        std::cout << "Failed to remove tag.\n";
     }
 }
 
@@ -97,8 +138,10 @@ void ConsoleUI::displayMenu() {
     std::cout << "1. Add Task\n";
     std::cout << "2. List Tasks\n";
     std::cout << "3. Complete Task\n";
-    std::cout << "4. File Operations\n";
-    std::cout << "5. Exit\n";
+    std::cout << "4. Add Tag\n";
+    std::cout << "5. Remove Tag\n";
+    std::cout << "8. File Operations\n";
+    std::cout << "9. Exit\n";
     std::cout << "Enter your choice: ";
 }
 
@@ -114,10 +157,10 @@ void ConsoleUI::handleFileOperations() {
     if (choice == "1") {
         std::cout << "Exporting tasks...\n";
         // Export tasks using FileManager's saveTodoList method
-        auto tasks = taskManager_.getTasks();
+        auto tasks = taskManager_.get()->getTasks();
         if (tasks && !tasks->empty()) {
-            if (fileManager_.saveTodoList(*tasks)) {
-                std::cout << "Tasks exported successfully to " << fileManager_.getTodoFilePath() << "\n";
+            if (fileManager_.get()->saveTodoList(*tasks)) {
+                std::cout << "Tasks exported successfully to " << fileManager_.get()->getTodoFilePath() << "\n";
             } else {
                 std::cerr << "Error: Failed to export tasks.\n";
             }
@@ -127,7 +170,7 @@ void ConsoleUI::handleFileOperations() {
     } else if (choice == "2") {
         std::cout << "Importing tasks...\n";
         // Assuming FileManager has an import method
-        if (fileManager_.loadTodoList()) {
+        if (fileManager_.get()->loadTodoList()) {
             std::cout << "Tasks imported successfully.\n";
         } else {
             std::cout << "Error: Failed to import tasks.\n";
@@ -148,10 +191,10 @@ void ConsoleUI::handleInput(std::string input) {
 }
 
 // Getters for private members (needed for consoleUI access)
-TaskManager& ConsoleUI::getTaskManager() {
+std::shared_ptr<TaskManager> ConsoleUI::getTaskManager() {
     return taskManager_;
 }
 
-FileManager& ConsoleUI::getFileManager() {
+std::shared_ptr<FileManager> ConsoleUI::getFileManager() {
     return fileManager_;
 }

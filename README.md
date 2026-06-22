@@ -4,10 +4,11 @@ A C++ command-line todo list application with persistent storage.
 
 ## Features
 
-- Add tasks with name, description, and priority (0-10)
-- List pending and completed tasks
-- Complete/delete tasks
-- Export/Import tasks to/from JSON files
+- Add tasks with name, description, priority (0-10), and due date
+- List pending and completed tasks with filtering options
+- Complete tasks by ID
+- Manage tags for organizing tasks (add and remove tags)
+- Export/Import tasks to/from text files
 - Settings persistence (max tasks per file, autosave)
 
 ## Building
@@ -26,11 +27,13 @@ make
 
 ### Menu Options
 
-1. **Add Task** - Add a new task with name, description, and priority
-2. **List Tasks** - View all pending tasks
+1. **Add Task** - Add a new task with name, description, priority, and due date
+2. **List Tasks** - View all pending tasks (with optional filtering)
 3. **Complete Task** - Mark a task as complete by ID
-4. **File Operations** - Export/Import tasks to/from files
-5. **Exit** - Exit the application
+4. **Add Tag** - Create a new tag for organizing tasks
+5. **Remove Tag** - Delete an existing tag
+6. **File Operations** - Export/Import tasks to/from files
+7. **Exit** - Exit the application
 
 ## Settings
 
@@ -46,17 +49,16 @@ enable_autosave=true
 
 ## Data Format
 
-Tasks are stored in JSON format in `todo_list.txt`:
+Tasks are stored in text format in `.todo_list.txt`:
 
-```json
-{
-"id":1,
-"name":"Task Name",
-"description":"Task description",
-"isCompleted":false,
-"priority":5,
-"dueDate":"2026-01-01 00:00:00"
-}
+```
+id:1|name:Task Name|description:Task description|isCompleted:false|priority:5|dueDate:2026-01-01 00:00:00
+```
+
+Tags are stored in `.tags.txt`:
+
+```
+id:1|name:Work|description:Work-related tasks
 ```
 
 ## Project Structure
@@ -64,17 +66,33 @@ Tasks are stored in JSON format in `todo_list.txt`:
 ```
 todo/
 ├── CMakeLists.txt
+├── LICENSE
+├── README.md
 ├── include/
+│   ├── cliHandler.hpp
 │   ├── consoleUI.hpp
 │   ├── fileManager.hpp
+│   ├── logger.hpp
 │   ├── settings.hpp
+│   ├── tag.hpp
+│   ├── tagManager.hpp
 │   ├── task.hpp
-│   └── taskManager.hpp
+│   ├── taskManager.hpp
+│   └── utils.hpp
 ├── src/
+│   ├── cliHandler.cpp
 │   ├── consoleUI.cpp
 │   ├── fileManager.cpp
+│   ├── logger.cpp
 │   ├── main.cpp
-│   └── taskManager.cpp
+│   ├── settings.cpp
+│   ├── tagManager.cpp
+│   ├── taskManager.cpp
+│   └── utils.cpp
+├── cli/
+│   └── console/
+│       └── todolist/
+│           └── utils/
 └── build/
 ```
 

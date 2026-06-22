@@ -5,7 +5,7 @@
 #include "utils.hpp"
 
 // Constructor implementation
-TaskManager::TaskManager(FileManager& fm) : nextId_(1), fileManager_(fm) {
+TaskManager::TaskManager(std::shared_ptr<FileManager> fm, std::shared_ptr<TagManager> tm) : nextId_(1), fileManager_(fm), tagManager_(tm) {
     loadTasks();
 }
 
@@ -22,7 +22,7 @@ TaskManager::~TaskManager() {
 
 void TaskManager::loadTasks() {
     try{
-        auto tasksOpt = fileManager_.loadTodoList();
+        auto tasksOpt = fileManager_.get()->loadTodoList();
         if (tasksOpt) {
             tasks_.clear();
             for (const auto& task : *tasksOpt) {
@@ -53,7 +53,7 @@ void TaskManager::saveTasks() {
         for (const auto& pair : tasks_) {
             tasksToSave.push_back(pair.second);
         }
-        if (fileManager_.saveTodoList(tasksToSave)) {
+        if (fileManager_.get()->saveTodoList(tasksToSave)) {
             std::cout << "Tasks saved successfully." << std::endl;
         } else {
             Logger::log(Logger::LogLevel::ERROR, "Failed to save tasks");
@@ -102,6 +102,10 @@ const std::optional<std::shared_ptr<Task>> TaskManager::getTask(int id) {
     }
     // Return nullopt for non-existent tasks
     return std::nullopt;
+}
+
+bool TaskManager::removeTag(const std::string& name, const int& id) {
+    return tagManager_->removeTag(name, id);
 }
 
 const std::optional<std::shared_ptr<Task>> TaskManager::getTaskName(const std::string& name) {
@@ -188,5 +192,73 @@ void TaskManager::listAllTasks() {
     std::cout << "Listing all tasks..." << std::endl;
     for (const auto& task : *getTasks().get()) {
         std::cout << "ID: " << task->getId() << ", Name: " << task->getName() << std::endl;
+    }
+}
+
+// Tag-related implementations
+bool TaskManager::addTag(const std::string& name, const std::string& description) {
+    return tagManager_->addTag(name, description);
+}
+
+std::shared_ptr<Tag> TaskManager::getTagById(const int& id) {
+    return tagManager_->getTagById(id);
+}
+
+std::shared_ptr<Tag> TaskManager::getTagByName(const std::string& name) {
+    return tagManager_->getTagByName(name);
+}
+
+bool TaskManager::addTagToTask(int taskId, const std::string& tagName) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (!taskOpt.has_value()) {
+            Logger::log(Logger::LogLevel::WARNING, "Task not found: " + std::to_string(taskId));
+            return false;
+        }
+
+        auto tag = tagManager_->getTagByName(tagName);
+        if (!tag) {
+            Logger::log(Logger::LogLevel::WARNING, "Tag not found: " + tagName);
+            return false;
+        }
+
+        // Check if tag is already added to this task
+        auto& task = *taskOpt.value();
+        for (const auto& existingTag : task.getTags()) {
+            if (existingTag->getName() == tagName) {
+                return true; // Tag already exists
+            }
+        }
+
+        task.addTag(tag);
+        saveTasks();
+        return true;
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error adding tag to task: " + std::string(e.what()));
+        return false;
+    }
+}
+
+bool TaskManager::removeTagFromTask(int taskId, const std::string& tagName) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (!taskOpt.has_value()) {
+            Logger::log(Logger::LogLevel::WARNING, "Task not found: " + std::to_string(taskId));
+            return false;
+        }
+
+        auto tag = tagManager_->getTagByName(tagName);
+        if (!tag) {
+            Logger::log(Logger::LogLevel::WARNING, "Tag not found: " + tagName);
+            return false;
+        }
+
+        auto& task = *taskOpt.value();
+        task.removeTag(tag);
+        saveTasks();
+        return true;
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error removing tag from task: " + std::string(e.what()));
+        return false;
     }
 }

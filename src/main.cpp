@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <chrono>
 #include <boost/program_options.hpp>
@@ -10,6 +11,7 @@
 #include "cliHandler.hpp"
 #include "settings.hpp"
 #include "logger.hpp"
+#include "tagManager.hpp"
 
 namespace po = boost::program_options;
 
@@ -18,14 +20,11 @@ int main(int argc, char* argv[]) {
     const std::string todoFilePath = ".todo_list.txt";
     const std::string settingsFilePath = ".settings.txt";
 
-    // This error should be suppressed in the future 
-    if (!loadSettings(settingsFilePath)) {
-        Logger::log(Logger::LogLevel::INFO, "No settings found: using default settings.");
-    }
-
-    FileManager fileManager(todoFilePath);
-
-    TaskManager taskManager(fileManager);
+    // Load settings from file (returns default settings if file doesn't exist)
+    auto settings = std::make_shared<Settings>(loadSettings(settingsFilePath));
+    auto fileManager = std::make_shared<FileManager>(todoFilePath);
+    auto tagManager = std::make_shared<TagManager>(settings);
+    auto taskManager = std::make_shared<TaskManager>(fileManager, tagManager);
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -42,6 +41,12 @@ int main(int argc, char* argv[]) {
         ("name,n", po::value<std::string>(), "Task name for add task operation")
         ("description,d", po::value<std::string>(), "Task description for add task operation")
         ("due-date,u", po::value<std::string>(), "Due date in YYYY-MM-DD HH:MM:SS format for add task")
+        // Tag options
+        ("add-tag,at", "Add a new tag")
+        ("remove-tag,rt", "Remove a tag")
+        ("tag-name,tn", po::value<std::string>(), "Tag name for add/remove tag operation")
+        ("tag-description,td", po::value<std::string>(), "Tag description for add tag operation")
+        ("tag-id,tid", po::value<int>(), "Tag ID for remove tag operation")
         // Filter options for list command
         ("due-date-min,dm", po::value<std::string>(), "Minimum due date (YYYY-MM-DD HH:MM:SS) for filtering")
         ("due-date-max,dM", po::value<std::string>(), "Maximum due date (YYYY-MM-DD HH:MM:SS) for filtering")
