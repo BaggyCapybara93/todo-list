@@ -2,7 +2,7 @@
 #include <iostream>
 #include "settings.hpp"
 #include "logger.hpp"
-#include "utils.hpp"
+#include "utils/utils.hpp"
 
 // Constructor implementation
 TaskManager::TaskManager(std::shared_ptr<FileManager> fm, std::shared_ptr<TagManager> tm) : nextId_(1), fileManager_(fm), tagManager_(tm) {

@@ -1,7 +1,7 @@
 #pragma once
 #include "taskManager.hpp"
 #include "fileManager.hpp"
-#include "utils.hpp"
+#include "utils/utils.hpp"
 #include "logger.hpp"
 #include "settings.hpp"
 

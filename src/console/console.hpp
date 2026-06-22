@@ -2,7 +2,7 @@
 #include "taskManager.hpp"
 #include "fileManager.hpp"
 #include "settings.hpp"
-#include "utils.hpp"
+#include "utils/utils.hpp"
 
 #include <ctime>
 #include <iostream>

@@ -11,7 +11,7 @@ set(TODO_SOURCES
     src/taskManager.cpp
     src/fileManager.cpp
     src/settings.cpp
-    src/utils.cpp
+    src/utils/utils.cpp
     src/logger.cpp
     src/tagManager.cpp
     src/cli/cli_handler.cpp
@@ -24,7 +24,7 @@ add_executable(todo ${TODO_SOURCES})
 
 target_include_directories(todo
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 find_package(Boost 1.71.0 CONFIG COMPONENTS program_options)
