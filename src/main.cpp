@@ -8,7 +8,7 @@
 #include "fileManager.hpp"
 #include "taskManager.hpp"
 #include "consoleUI.hpp"
-#include "cliHandler.hpp"
+#include "cli/cli.hpp"
 #include "settings.hpp"
 #include "logger.hpp"
 #include "tagManager.hpp"
@@ -79,8 +79,8 @@ int main(int argc, char* argv[]) {
         }
     } else {
         // Run with CLI options using new CLIHandler
-        CLIHandler cliHandler(taskManager, fileManager, vm);
-        cliHandler.execute();
+        CLI cli(taskManager, fileManager, vm);
+        cli.execute();
     }
 
     return 0;

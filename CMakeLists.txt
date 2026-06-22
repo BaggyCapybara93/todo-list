@@ -11,11 +11,12 @@ set(TODO_SOURCES
     src/taskManager.cpp
     src/fileManager.cpp
     src/consoleUI.cpp
-    src/cliHandler.cpp
     src/settings.cpp
     src/utils.cpp
     src/logger.cpp
     src/tagManager.cpp
+    src/cli/cli_handler.cpp
+    src/cli/cli.cpp
 )
 
 add_executable(todo ${TODO_SOURCES})
