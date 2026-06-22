@@ -61,41 +61,6 @@ Tags are stored in `.tags.txt`:
 id:1|name:Work|description:Work-related tasks
 ```
 
-## Project Structure
-
-```
-todo/
-├── CMakeLists.txt
-├── LICENSE
-├── README.md
-├── include/
-│   ├── cliHandler.hpp
-│   ├── consoleUI.hpp
-│   ├── fileManager.hpp
-│   ├── logger.hpp
-│   ├── settings.hpp
-│   ├── tag.hpp
-│   ├── tagManager.hpp
-│   ├── task.hpp
-│   ├── taskManager.hpp
-│   └── utils.hpp
-├── src/
-│   ├── cliHandler.cpp
-│   ├── consoleUI.cpp
-│   ├── fileManager.cpp
-│   ├── logger.cpp
-│   ├── main.cpp
-│   ├── settings.cpp
-│   ├── tagManager.cpp
-│   ├── taskManager.cpp
-│   └── utils.cpp
-├── cli/
-│   └── console/
-│       └── todolist/
-│           └── utils/
-└── build/
-```
-
 ## License
 
 MIT License
