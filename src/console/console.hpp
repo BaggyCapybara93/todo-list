@@ -1,6 +1,6 @@
 #pragma once
-#include "taskManager.hpp"
-#include "fileManager.hpp"
+#include "task/manager.hpp"
+#include "file_manager/fileManager.hpp"
 #include "settings.hpp"
 #include "utils/utils.hpp"
 

@@ -8,12 +8,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wcast-align -Wformat=2
 
 set(TODO_SOURCES 
     src/main.cpp 
-    src/taskManager.cpp
-    src/fileManager.cpp
+    src/task/manager.cpp
+    src/file_manager/fileManager.cpp
     src/settings.cpp
     src/utils/utils.cpp
     src/logger.cpp
-    src/tagManager.cpp
+    src/tag/manager.cpp
     src/cli/cli_handler.cpp
     src/cli/cli.cpp
     src/console/console.cpp

@@ -3,8 +3,8 @@
 #include <vector>
 #include <optional>
 #include "task.hpp"
-#include "fileManager.hpp"
-#include "tagManager.hpp"
+#include "file_manager/fileManager.hpp"
+#include "tag/manager.hpp"
 #include "settings.hpp"
 
 class TaskManager{

@@ -5,13 +5,13 @@
 #include <chrono>
 #include <boost/program_options.hpp>
 
-#include "fileManager.hpp"
-#include "taskManager.hpp"
+#include "file_manager/fileManager.hpp"
+#include "task/manager.hpp"
 #include "console/console.hpp"
 #include "cli/cli.hpp"
 #include "settings.hpp"
 #include "logger.hpp"
-#include "tagManager.hpp"
+#include "tag/manager.hpp"
 
 namespace po = boost::program_options;
 
