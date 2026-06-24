@@ -21,8 +21,6 @@ void CLI::execute() {
             handleRemoveTag();
         }  else if (config_.count("export") > 0 || config_.count("import") > 0) {
             handleFileOperations();
-        } else if (config_.count("exit") > 0) {
-            handleExit();
         } else {
             Logger::log(Logger::LogLevel::ERROR, "No command specified.");
             Logger::log(Logger::LogLevel::INFO, "Use --help for more information.");
@@ -49,6 +47,7 @@ void CLI::displayHelp(const po::variables_map& vm) {
 
         UI::instance().println("  --help, -h          Show this help message");
         UI::instance().println("  --menu, -m          Run in interactive menu mode");
+        UI::instance().println("  --verbose, -v       Print verbose output");
         UI::instance().println("  --add, -a           Add a new task");
         UI::instance().println("  --list, -l          List all tasks");
         UI::instance().println("  --complete, -c      Complete a task");

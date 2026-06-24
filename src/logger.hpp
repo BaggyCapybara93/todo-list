@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
+#include <optional>
+#include <memory>
 
+#include "settings.hpp"
 class Logger {
     private:
 

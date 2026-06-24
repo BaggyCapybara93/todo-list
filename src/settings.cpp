@@ -11,7 +11,7 @@ Settings setting_;
 Settings loadSettings(const std::string& settingsFilePath) {
     std::ifstream file(settingsFilePath);
     if (!file.is_open()) {
-        Logger::log(Logger::LogLevel::INFO, "No existing settings file found. Using defaults.");
+        if(setting_.verbose) Logger::log(Logger::LogLevel::INFO, "No existing settings file found. Using defaults.");
         return setting_;
     }
 
@@ -42,7 +42,13 @@ Settings loadSettings(const std::string& settingsFilePath) {
                 } catch (const std::exception& e) {
                     Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for enable_autosave");
                 }
-            } else {
+            } else if (key == "verbose") {
+                try {
+                    setting_.verbose = (value == "true" || value == "1");
+                } catch (const std::exception& e) {
+                    Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for verbose");
+                }
+            }else {
                 // Unknown key - skip it with a warning
                 Logger::log(Logger::LogLevel::WARNING, "Unknown setting key '" + key + "' on line " + std::to_string(lineNum) + ", skipping.");
             }

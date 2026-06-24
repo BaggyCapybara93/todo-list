@@ -38,7 +38,9 @@ void TaskManager::loadTasks() {
 
                 tasks_[task->getId()] = task;
             }
-            std::cout << "Tasks loaded successfully." << std::endl;
+            if (setting_.verbose) {
+                std::cout << "Tasks loaded successfully." << std::endl;
+            }
         } else {
             Logger::log(Logger::LogLevel::WARNING, "Could not load tasks, starting with empty list.");
         }
@@ -53,10 +55,8 @@ void TaskManager::saveTasks() {
         for (const auto& pair : tasks_) {
             tasksToSave.push_back(pair.second);
         }
-        if (fileManager_.get()->saveTodoList(tasksToSave)) {
+        if (fileManager_.get()->saveTodoList(tasksToSave) && setting_.verbose) {
             std::cout << "Tasks saved successfully." << std::endl;
-        } else {
-            Logger::log(Logger::LogLevel::ERROR, "Failed to save tasks");
         }
     } catch (const std::exception& e) {
         Logger::log(Logger::LogLevel::ERROR, std::string(e.what()));

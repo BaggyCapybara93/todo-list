@@ -2,10 +2,12 @@
 #include <string>
 
 struct Settings{
-    int maxTasksPerFile = 1000;
-    bool enableAutosave = true;
+    int maxTasksPerFile;
+    bool enableAutosave ;
 
-    Settings() : maxTasksPerFile(1000), enableAutosave(true) {}
+    bool verbose;
+
+    Settings() : maxTasksPerFile(1000), enableAutosave(true), verbose(false) {}
 };
 
 extern Settings setting_;

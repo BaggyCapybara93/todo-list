@@ -31,12 +31,12 @@ int main(int argc, char* argv[]) {
     desc.add_options()
         ("help,h", "Show help message")
         ("menu,m", "Run in interactive menu mode")
+        ("verbose,v", po::bool_switch(&setting_.verbose)->default_value(false),"Print verbose output")
         ("add,a", "Add a new task")
         ("list,l", "List all tasks")
         ("complete,c", "Complete a task")
         ("export,e", "Export tasks to file")
         ("import,i", "Import tasks from file")
-        ("exit,x", "Exit the application")
         ("priority,p", po::value<int>()->default_value(5), "Priority level (0-10) for add task")
         ("task-id,T", po::value<int>(), "Task ID for complete task operation")
         ("name,n", po::value<std::string>(), "Task name for add task operation")
@@ -64,8 +64,6 @@ int main(int argc, char* argv[]) {
         
         exit(1);
     }
-
-    std::cout << "Todo List Application Started." << std::endl;
 
     // Check if menu mode is enabled via CLI
     if (vm.count("menu") > 0) {
