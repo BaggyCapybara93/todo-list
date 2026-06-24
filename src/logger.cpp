@@ -1,20 +1,21 @@
 #include "logger.hpp"
+#include "ui.hpp"
 #include <iostream>
 #include <ctime>
 
 void Logger::log(LogLevel level, const std::string& message) {
     switch(level){
         case LogLevel::ERROR:
-            std::cerr << "[ERROR] " << message << std::endl;
+            UI::instance().println("[ERROR] " + message, Color::Red);
             break;
         case LogLevel::WARNING:
-            std::cerr << "[WARNING] " << message << std::endl;
+            UI::instance().println("[WARNING] " + message, Color::Yellow);
             break;
         case LogLevel::INFO:
-            std::cout << "[INFO] " << message << std::endl;
+            UI::instance().println("[INFO] " + message, Color::Blue);
             break;
         case LogLevel::FATAL:
-            std::cerr << "[FATAL] " << message << std::endl;
+            UI::instance().println("[FATAL] " + message, Color::Red);
             break;
     }
 }

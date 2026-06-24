@@ -11,6 +11,7 @@
 #include "cli/cli.hpp"
 #include "settings.hpp"
 #include "logger.hpp"
+#include "ui.hpp"
 #include "tag/manager.hpp"
 
 namespace po = boost::program_options;
@@ -59,7 +60,7 @@ int main(int argc, char* argv[]) {
         po::notify(vm);
     } catch (const po::error& ex) {
         Logger::log(Logger::LogLevel::ERROR, ex.what());
-        std::cout << "\nUsage: " << desc << std::endl;
+        UI::instance().println("Error parsing command line options.");
         
         exit(1);
     }

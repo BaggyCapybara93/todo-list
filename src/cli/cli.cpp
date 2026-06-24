@@ -1,5 +1,5 @@
 #include "cli.hpp"
-
+#include "ui.hpp"
 
 CLI::CLI(std::shared_ptr<TaskManager> tm, std::shared_ptr<FileManager> fm, po::variables_map config)
     : taskManager_(std::move(tm)), fileManager_(std::move(fm)), config_(config) {
@@ -35,150 +35,241 @@ void CLI::execute() {
 }
 
 void CLI::displayHelp(const po::variables_map& vm) {
-    std::cout << "\nTodo List Application - Help\n";
-    std::cout << "=============================\n\n";
-    
-    if (vm.count("help") > 0) {        
-        std::cout << "General Help:\n";
-        std::cout << "  This application manages todo lists with the following commands:\n\n";
-        std::cout << "  --help, -h          Show this help message\n";
-        std::cout << "  --menu, -m          Run in interactive menu mode\n";
-        std::cout << "  --add, -a           Add a new task\n";
-        std::cout << "  --list, -l          List all tasks\n";
-        std::cout << "  --complete, -c      Complete a task\n";
-        std::cout << "  --add-tag, -tg      Add a new tag\n";
-        std::cout << "  --remove-tag, -rt   Remove a tag\n";
-        std::cout << "  --export, -e        Export tasks to file\n";
-        std::cout << "  --import, -i        Import tasks from file\n";
-        std::cout << "  --exit, -x          Exit the application\n\n";
-        
-        std::cout << "========================================\n";
-        std::cout << "EXAMPLES\n";
-        std::cout << "========================================\n\n";
-        std::cout << "  Add a task:\n";
-        std::cout << "    --add --name \"Buy groceries\" --description \"Milk, eggs, bread\" --due-date 2026-06-25 12:00:00 --priority 7\n\n";
-        std::cout << "  List pending tasks:\n";
-        std::cout << "    --list\n\n";
-        std::cout << "  List tasks with filters:\n";
-        std::cout << "    --list --due-date-min 2026-06-20 00:00:00 --priority-min 5\n\n";
-        std::cout << "  Complete a task:\n";
-        std::cout << "    --complete --task-id 1\n\n";
-        std::cout << "  Add a tag:\n";
-        std::cout << "    --add-tag --tag-name \"Work\" --tag-description \"Work-related tasks\"\n\n";
-        std::cout << "  Remove a tag:\n";
-        std::cout << "    --remove-tag --tag-name \"Work\"\n\n";
-        std::cout << "  Export all tasks:\n";
-        std::cout << "    --export\n\n";
+
+    UI::instance().println("\nTodo List Application - Help", Color::Cyan);
+    UI::instance().println("============================================\n", Color::White);
+
+    // ---------------------------------------------------------
+    // GENERAL HELP
+    // ---------------------------------------------------------
+    if (vm.count("help") > 0) {
+
+        UI::instance().println("General Help:", Color::Green);
+        UI::instance().println("  This application manages todo lists with the following commands:\n");
+
+        UI::instance().println("  --help, -h          Show this help message");
+        UI::instance().println("  --menu, -m          Run in interactive menu mode");
+        UI::instance().println("  --add, -a           Add a new task");
+        UI::instance().println("  --list, -l          List all tasks");
+        UI::instance().println("  --complete, -c      Complete a task");
+        UI::instance().println("  --add-tag, -tg      Add a new tag");
+        UI::instance().println("  --remove-tag, -rt   Remove a tag");
+        UI::instance().println("  --export, -e        Export tasks to file");
+        UI::instance().println("  --import, -i        Import tasks from file");
+        UI::instance().println("  --exit, -x          Exit the application\n");
+
+        UI::instance().println("============================================", Color::White);
+        UI::instance().println("EXAMPLES", Color::Green);
+        UI::instance().println("============================================\n", Color::White);
+
+        UI::instance().println("  Add a task:");
+        UI::instance().println("    --add --name \"Buy groceries\" --description \"Milk, eggs, bread\" --due-date 2026-06-25 12:00:00 --priority 7\n");
+
+        UI::instance().println("  List pending tasks:");
+        UI::instance().println("    --list\n");
+
+        UI::instance().println("  List tasks with filters:");
+        UI::instance().println("    --list --due-date-min 2026-06-20 00:00:00 --priority-min 5\n");
+
+        UI::instance().println("  Complete a task:");
+        UI::instance().println("    --complete --task-id 1\n");
+
+        UI::instance().println("  Add a tag:");
+        UI::instance().println("    --add-tag --tag-name \"Work\" --tag-description \"Work-related tasks\"\n");
+
+        UI::instance().println("  Remove a tag:");
+        UI::instance().println("    --remove-tag --tag-name \"Work\"\n");
+
+        UI::instance().println("  Export all tasks:");
+        UI::instance().println("    --export\n");
+
+        return;
     }
-    else if (vm.count("add") > 0) {
-        std::cout << "========================================\n";
-        std::cout << "ADD TASK (--add, -a)\n";
-        std::cout << "========================================\n\n";
-        std::cout << "Add a new task to the todo list.\n\n";
-        std::cout << "  Required options:\n";
-        std::cout << "    --name, -n          Task name (required)\n";
-        std::cout << "    --description, -d   Task description (required)\n";
-        std::cout << "    --due-date, -u      Due date in YYYY-MM-DD HH:MM:SS format (required)\n\n";
-        std::cout << "  Optional options:\n";
-        std::cout << "    --priority, -p      Priority level (0-10), default: 5\n\n";
-        std::cout << "  Example:\n";
-        std::cout << "    --add --name \"Complete project\" --description \"Finish all features\" --due-date 2026-07-01 18:00:00 --priority 9\n";
+
+    // ---------------------------------------------------------
+    // ADD TASK
+    // ---------------------------------------------------------
+    if (vm.count("add") > 0) {
+
+        UI::instance().println("============================================", Color::White);
+        UI::instance().println("ADD TASK (--add, -a)", Color::Green);
+        UI::instance().println("============================================\n", Color::White);
+
+        UI::instance().println("Add a new task to the todo list.\n");
+
+        UI::instance().println("  Required options:");
+        UI::instance().println("    --name, -n          Task name (required)");
+        UI::instance().println("    --description, -d   Task description (required)");
+        UI::instance().println("    --due-date, -u      Due date in YYYY-MM-DD HH:MM:SS format (required)\n");
+
+        UI::instance().println("  Optional options:");
+        UI::instance().println("    --priority, -p      Priority level (0-10), default: 5\n");
+
+        UI::instance().println("  Example:");
+        UI::instance().println("    --add --name \"Complete project\" --description \"Finish all features\" --due-date 2026-07-01 18:00:00 --priority 9");
+
+        return;
     }
-    else if (vm.count("list") > 0) {
-        std::cout << "========================================\n";
-        std::cout << "LIST TASKS (--list, -l)\n";
-        std::cout << "========================================\n\n";
-        std::cout << "List all pending tasks in the todo list.\n\n";
-        std::cout << "  Options:\n";
-        std::cout << "    Without filters: Shows all pending tasks\n\n";
-        std::cout << "    With filters: Use the following options to filter pending tasks:\n";
-        std::cout << "      --due-date-min, -dm    Minimum due date (YYYY-MM-DD HH:MM:SS)\n";
-        std::cout << "      --due-date-max, -dM    Maximum due date (YYYY-MM-DD HH:MM:SS)\n";
-        std::cout << "      --priority-min, -pm    Minimum priority (0-10)\n";
-        std::cout << "      --priority-max, -pM    Maximum priority (0-10)\n\n";
-        std::cout << "  Examples:\n";
-        std::cout << "    List all pending tasks:\n";
-        std::cout << "      --list\n\n";
-        std::cout << "    List tasks due after a specific date:\n";
-        std::cout << "      --list --due-date-min 2026-06-20 00:00:00\n\n";
-        std::cout << "    List tasks with priority >= 5:\n";
-        std::cout << "      --list --priority-min 5\n\n";
-        std::cout << "    List tasks with priority between 3 and 7:\n";
-        std::cout << "      --list --priority-min 3 --priority-max 7\n";
+
+    // ---------------------------------------------------------
+    // LIST TASKS
+    // ---------------------------------------------------------
+    if (vm.count("list") > 0) {
+
+        UI::instance().println("============================================", Color::White);
+        UI::instance().println("LIST TASKS (--list, -l)", Color::Green);
+        UI::instance().println("============================================\n", Color::White);
+
+        UI::instance().println("List all pending tasks in the todo list.\n");
+
+        UI::instance().println("  Options:");
+        UI::instance().println("    Without filters: Shows all pending tasks\n");
+        UI::instance().println("    With filters:");
+        UI::instance().println("      --due-date-min, -dm    Minimum due date (YYYY-MM-DD HH:MM:SS)");
+        UI::instance().println("      --due-date-max, -dM    Maximum due date (YYYY-MM-DD HH:MM:SS)");
+        UI::instance().println("      --priority-min, -pm    Minimum priority (0-10)");
+        UI::instance().println("      --priority-max, -pM    Maximum priority (0-10)\n");
+
+        UI::instance().println("  Examples:");
+        UI::instance().println("    --list");
+        UI::instance().println("    --list --due-date-min 2026-06-20 00:00:00");
+        UI::instance().println("    --list --priority-min 5");
+        UI::instance().println("    --list --priority-min 3 --priority-max 7");
+
+        return;
     }
-    else if (vm.count("complete") > 0) {
-        std::cout << "========================================\n";
-        std::cout << "COMPLETE TASK (--complete, -c)\n";
-        std::cout << "========================================\n\n";
-        std::cout << "Mark a task as complete.\n\n";
-        std::cout << "  Required options:\n";
-        std::cout << "    --task-id, -T       Task ID to complete (required)\n\n";
-        std::cout << "  Example:\n";
-        std::cout << "    --complete --task-id 1\n";
+
+    // ---------------------------------------------------------
+    // COMPLETE TASK
+    // ---------------------------------------------------------
+    if (vm.count("complete") > 0) {
+
+        UI::instance().println("============================================", Color::White);
+        UI::instance().println("COMPLETE TASK (--complete, -c)", Color::Green);
+        UI::instance().println("============================================\n", Color::White);
+
+        UI::instance().println("Mark a task as complete.\n");
+
+        UI::instance().println("  Required options:");
+        UI::instance().println("    --task-id, -T       Task ID to complete (required)\n");
+
+        UI::instance().println("  Example:");
+        UI::instance().println("    --complete --task-id 1");
+
+        return;
     }
-    else if (vm.count("add-tag") > 0) {
-        std::cout << "========================================\n";
-        std::cout << "ADD TAG (--add-tag, -at)\n";
-        std::cout << "========================================\n\n";
-        std::cout << "Add a new tag to organize tasks.\n\n";
-        std::cout << "  Required options:\n";
-        std::cout << "    --tag-name, -tn     Tag name (required)\n";
-        std::cout << "    --tag-description, -td  Tag description (required)\n\n";
-        std::cout << "  Example:\n";
-        std::cout << "    --add-tag --tag-name \"Work\" --tag-description \"Work-related tasks\"\n";
+
+    // ---------------------------------------------------------
+    // ADD TAG
+    // ---------------------------------------------------------
+    if (vm.count("add-tag") > 0) {
+
+        UI::instance().println("============================================", Color::White);
+        UI::instance().println("ADD TAG (--add-tag, -at)", Color::Green);
+        UI::instance().println("============================================\n", Color::White);
+
+        UI::instance().println("Add a new tag to organize tasks.\n");
+
+        UI::instance().println("  Required options:");
+        UI::instance().println("    --tag-name, -tn     Tag name (required)");
+        UI::instance().println("    --tag-description, -td  Tag description (required)\n");
+
+        UI::instance().println("  Example:");
+        UI::instance().println("    --add-tag --tag-name \"Work\" --tag-description \"Work-related tasks\"");
+
+        return;
     }
-    else if (vm.count("remove-tag") > 0) {
-        std::cout << "========================================\n";
-        std::cout << "REMOVE TAG (--remove-tag, -rt)\n";
-        std::cout << "========================================\n\n";
-        std::cout << "Remove a tag from the todo list.\n\n";
-        std::cout << "  Required options:\n";
-        std::cout << "    --tag-name, -tn     Tag name (required)\n";
-        std::cout << "    --tag-id, -tid     Tag ID (alternative to name)\n\n";
-        std::cout << "  Example:\n";
-        std::cout << "    --remove-tag --tag-name \"Work\"\n";
+
+    // ---------------------------------------------------------
+    // REMOVE TAG
+    // ---------------------------------------------------------
+    if (vm.count("remove-tag") > 0) {
+
+        UI::instance().println("============================================", Color::White);
+        UI::instance().println("REMOVE TAG (--remove-tag, -rt)", Color::Green);
+        UI::instance().println("============================================\n", Color::White);
+
+        UI::instance().println("Remove a tag from the todo list.\n");
+
+        UI::instance().println("  Required options:");
+        UI::instance().println("    --tag-name, -tn     Tag name (required)");
+        UI::instance().println("    --tag-id, -tid      Tag ID (alternative to name)\n");
+
+        UI::instance().println("  Example:");
+        UI::instance().println("    --remove-tag --tag-name \"Work\"");
+
+        return;
     }
-    else if (vm.count("export") > 0) {
-        std::cout << "========================================\n";
-        std::cout << "EXPORT TASKS (--export, -e)\n";
-        std::cout << "========================================\n\n";
-        std::cout << "Export all tasks to the todo list file.\n\n";
-        std::cout << "  This saves all current tasks to: " << fileManager_.get()->getTodoFilePath() << "\n\n";
-        std::cout << "  Use this to backup your tasks or transfer them to another device.\n";
+
+    // ---------------------------------------------------------
+    // EXPORT
+    // ---------------------------------------------------------
+    if (vm.count("export") > 0) {
+
+        UI::instance().println("============================================", Color::White);
+        UI::instance().println("EXPORT TASKS (--export, -e)", Color::Green);
+        UI::instance().println("============================================\n", Color::White);
+
+        UI::instance().println("Export all tasks to the todo list file.\n");
+
+        UI::instance().println("  This saves all current tasks to:");
+        UI::instance().println("    " + fileManager_.get()->getTodoFilePath() + "\n");
+
+        UI::instance().println("Use this to backup your tasks or transfer them to another device.");
+
+        return;
     }
-    else if (vm.count("import") > 0) {
-        std::cout << "========================================\n";
-        std::cout << "IMPORT TASKS (--import, -i)\n";
-        std::cout << "========================================\n\n";
-        std::cout << "Import tasks from the todo list file.\n\n";
-        std::cout << "  This loads tasks from: " << fileManager_.get()->getTodoFilePath() << "\n\n";
-        std::cout << "  Use this to restore your tasks or import from another device.\n";
+
+    // ---------------------------------------------------------
+    // IMPORT
+    // ---------------------------------------------------------
+    if (vm.count("import") > 0) {
+
+        UI::instance().println("============================================", Color::White);
+        UI::instance().println("IMPORT TASKS (--import, -i)", Color::Green);
+        UI::instance().println("============================================\n", Color::White);
+
+        UI::instance().println("Import tasks from the todo list file.\n");
+
+        UI::instance().println("  This loads tasks from:");
+        UI::instance().println("    " + fileManager_.get()->getTodoFilePath() + "\n");
+
+        UI::instance().println("Use this to restore your tasks or import from another device.");
+
+        return;
     }
-    else {
-        std::cout << "========================================\n";
-        std::cout << "COMMANDS\n";
-        std::cout << "========================================\n\n";
-        std::cout << "  --help, -h          Show this help message\n";
-        std::cout << "  --menu, -m          Run in interactive menu mode\n";
-        std::cout << "  --add, -a           Add a new task\n";
-        std::cout << "  --list, -l          List all tasks\n";
-        std::cout << "  --complete, -c      Complete a task\n";
-        std::cout << "  --add-tag, -tg      Add a new tag\n";
-        std::cout << "  --remove-tag, -rt   Remove a tag\n";
-        std::cout << "  --export, -e        Export tasks to file\n";
-        std::cout << "  --import, -i        Import tasks from file\n";
-        std::cout << "  --exit, -x          Exit the application\n\n";
-        
-        std::cout << "========================================\n";
-        std::cout << "QUICK START\n";
-        std::cout << "========================================\n\n";
-        std::cout << "  1. Add your first task:\n";
-        std::cout << "     --add --name \"Hello World\" --description \"My first task\" --due-date 2026-06-25 12:00:00\n\n";
-        std::cout << "  2. List all tasks:\n";
-        std::cout << "     --list\n\n";
-        std::cout << "  3. Complete a task:\n";
-        std::cout << "     --complete --task-id 1\n\n";
-        std::cout << "  4. Export your tasks:\n";
-        std::cout << "     --export\n";
-    }
+
+    // ---------------------------------------------------------
+    // DEFAULT HELP
+    // ---------------------------------------------------------
+    UI::instance().println("============================================", Color::White);
+    UI::instance().println("COMMANDS", Color::Green);
+    UI::instance().println("============================================\n", Color::White);
+
+    UI::instance().println("  --help, -h          Show this help message");
+    UI::instance().println("  --menu, -m          Run in interactive menu mode");
+    UI::instance().println("  --add, -a           Add a new task");
+    UI::instance().println("  --list, -l          List all tasks");
+    UI::instance().println("  --complete, -c      Complete a task");
+    UI::instance().println("  --add-tag, -tg      Add a new tag");
+    UI::instance().println("  --remove-tag, -rt   Remove a tag");
+    UI::instance().println("  --export, -e        Export tasks to file");
+    UI::instance().println("  --import, -i        Import tasks from file");
+    UI::instance().println("  --exit, -x          Exit the application\n");
+
+    UI::instance().println("============================================", Color::White);
+    UI::instance().println("QUICK START", Color::Green);
+    UI::instance().println("============================================\n", Color::White);
+
+    UI::instance().println("  1. Add your first task:");
+    UI::instance().println("     --add --name \"Hello World\" --description \"My first task\" --due-date 2026-06-25 12:00:00\n");
+
+    UI::instance().println("  2. List all tasks:");
+    UI::instance().println("     --list\n");
+
+    UI::instance().println("  3. Complete a task:");
+    UI::instance().println("     --complete --task-id 1\n");
+
+    UI::instance().println("  4. Export your tasks:");
+    UI::instance().println("     --export");
 }
