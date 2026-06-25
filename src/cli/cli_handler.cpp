@@ -147,7 +147,7 @@ void CLI::handleFileOperations() {
 }
 
 void CLI::handleHelp() {
-    CLI::displayHelp(config_);
+    CLI::displayHelp();
 }
 
 void CLI::handleExit() {

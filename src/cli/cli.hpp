@@ -12,11 +12,24 @@
 
 namespace po = boost::program_options;
 
+enum CLICommand{
+    HELP,
+    ADD,
+    LIST,
+    COMPLETE,
+    ADDTAG,
+    REMOVETAG,
+    EXPORT,
+    IMPORT,
+    UNKNOWN
+};
+
 class CLI {
     private:
         std::shared_ptr<TaskManager> taskManager_;
         std::shared_ptr<FileManager> fileManager_;
         po::variables_map config_;
+        CLICommand command_;
 
         // CLI command handlers
         void handleAddTask();
@@ -28,6 +41,8 @@ class CLI {
         void handleHelp();
         void handleExit();
 
+        void parseVM(const po::variables_map& vm);
+
     public:
         CLI(std::shared_ptr<TaskManager> tm, std::shared_ptr<FileManager> fm, po::variables_map config_);
     
@@ -35,5 +50,5 @@ class CLI {
         void execute();
         
         // Display help
-        void displayHelp(const po::variables_map& vm);
+        void displayHelp();
 };
