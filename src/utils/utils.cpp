@@ -58,6 +58,42 @@ std::chrono::system_clock::time_point parseDueDate(const std::string& dueDateStr
     return std::chrono::system_clock::from_time_t(currentTime);
 }
 
+// Parse repeat interval string to RepeatInterval enum
+RepeatInterval parseRepeatInterval(const std::string& intervalStr) {
+    if (intervalStr == "NEVER") {
+        return RepeatInterval::NEVER;
+    } else if (intervalStr == "DAILY") {
+        return RepeatInterval::DAILY;
+    } else if (intervalStr == "WEEKLY") {
+        return RepeatInterval::WEEKLY;
+    } else if (intervalStr == "MONTHLY") {
+        return RepeatInterval::MONTHLY;
+    } else if (intervalStr == "YEARLY") {
+        return RepeatInterval::YEARLY;
+    } else {
+        std::cerr << "Error: Invalid repeat interval: " << intervalStr << std::endl;
+        return RepeatInterval::NEVER;
+    }
+}
+
+// Convert RepeatInterval enum to string
+std::string repeatIntervalToString(RepeatInterval interval) {
+    switch (interval) {
+        case RepeatInterval::NEVER:
+            return "NEVER";
+        case RepeatInterval::DAILY:
+            return "DAILY";
+        case RepeatInterval::WEEKLY:
+            return "WEEKLY";
+        case RepeatInterval::MONTHLY:
+            return "MONTHLY";
+        case RepeatInterval::YEARLY:
+            return "YEARLY";
+        default:
+            return "NEVER";
+    }
+}
+
 // Validate a file path for safety
 bool isValidFilePath(const std::string& path) {
     if (path.empty()) {

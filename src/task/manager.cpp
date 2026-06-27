@@ -262,3 +262,38 @@ bool TaskManager::removeTagFromTask(int taskId, const std::string& tagName) {
         return false;
     }
 }
+
+// Repeat task methods
+bool TaskManager::setRepeatTask(int taskId, const std::string& intervalStr) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (!taskOpt.has_value()) {
+            Logger::log(Logger::LogLevel::WARNING, "Task not found: " + std::to_string(taskId));
+            return false;
+        }
+
+        auto& task = *taskOpt.value();
+        task.setRepeatInterval(parseRepeatInterval(intervalStr));
+        task.calculateNextDueDate();
+        saveTasks();
+        return true;
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error setting repeat task: " + std::string(e.what()));
+        return false;
+    }
+}
+
+RepeatInterval TaskManager::getRepeatInterval(int taskId) {
+    auto taskOpt = getTask(taskId);
+    if (taskOpt.has_value()) {
+        return taskOpt.value()->getRepeatInterval();
+    }
+    return RepeatInterval::NEVER;
+}
+
+void TaskManager::calculateNextDueDates() {
+    for (auto& pair : tasks_) {
+        pair.second->calculateNextDueDate();
+    }
+    saveTasks();
+}

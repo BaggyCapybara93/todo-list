@@ -11,6 +11,7 @@ void Console::initializeCommands() {
     commandMap_["3"] = [this]() { this->handleCompleteTask(); };
     commandMap_["4"] = [this]() { this->handleAddTag(); };
     commandMap_["5"] = [this]() { this->handleRemoveTag(); };
+    commandMap_["6"] = [this]() { this->handleSetRepeatTask(); };
     commandMap_["8"] = [this]() { this->handleFileOperations(); };
     commandMap_["9"] = [this]() { this->handleExit(); };
 }

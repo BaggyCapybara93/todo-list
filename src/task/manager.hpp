@@ -48,6 +48,11 @@ class TaskManager{
         bool addTagToTask(int taskId, const std::string& tagName);
         bool removeTagFromTask(int taskId, const std::string& tagName);
 
+        // Repeat task methods
+        bool setRepeatTask(int taskId, const std::string& intervalStr);
+        RepeatInterval getRepeatInterval(int taskId);
+        void calculateNextDueDates();
+
         void listAllTasks();
         
         void loadTasks();

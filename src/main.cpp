@@ -48,6 +48,9 @@ int main(int argc, char* argv[]) {
         ("tag-name,tn", po::value<std::string>(), "Tag name for add/remove tag operation")
         ("tag-description,td", po::value<std::string>(), "Tag description for add tag operation")
         ("tag-id,tid", po::value<int>(), "Tag ID for remove tag operation")
+        // Repeat task options
+        ("repeat,r", "Set repeat interval for a task")
+        ("repeat-interval", po::value<std::string>(), "Repeat interval (NEVER, DAILY, WEEKLY, MONTHLY, YEARLY) for repeat task")
         // Filter options for list command
         ("due-date-min,dm", po::value<std::string>(), "Minimum due date (YYYY-MM-DD HH:MM:SS) for filtering")
         ("due-date-max,dM", po::value<std::string>(), "Maximum due date (YYYY-MM-DD HH:MM:SS) for filtering")

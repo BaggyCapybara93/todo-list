@@ -19,6 +19,8 @@ void CLI::execute() {
             handleAddTag();
         } else if (config_.count("remove-tag") > 0 || config_.count("tag-name") > 0 || config_.count("tag-id") > 0) {
             handleRemoveTag();
+        } else if (config_.count("repeat") > 0 || config_.count("repeat-interval") > 0) {
+            handleSetRepeatTask();
         }  else if (config_.count("export") > 0 || config_.count("import") > 0) {
             handleFileOperations();
         } else {
@@ -47,6 +49,8 @@ void CLI::parseVM(const po::variables_map& vm){
         command_ = ADDTAG;
     } else if (vm.count("remove-tag") > 0 || vm.count("tag-name") > 0 || vm.count("tag-id") > 0) {
         command_ = REMOVETAG;
+    } else if (vm.count("repeat") > 0 || vm.count("repeat-interval") > 0) {
+        command_ = ADDTAG; // Reuse ADDTAG for repeat task
     } else if (vm.count("export") > 0 || vm.count("import") > 0) {
         command_ = (vm.count("export") > 0) ? EXPORT : IMPORT;
     } else {
@@ -197,6 +201,7 @@ void CLI::displayHelp() {
             UI::instance().println("  --add, -a           Add a new task");
             UI::instance().println("  --list, -l          List all tasks");
             UI::instance().println("  --complete, -c      Complete a task");
+            UI::instance().println("  --repeat, -r        Set repeat interval for a task");
             UI::instance().println("  --add-tag, -tg      Add a new tag");
             UI::instance().println("  --remove-tag, -rt   Remove a tag");
             UI::instance().println("  --export, -e        Export tasks to file");
@@ -211,7 +216,9 @@ void CLI::displayHelp() {
             UI::instance().println("     --list\n");
             UI::instance().println("  3. Complete a task:");
             UI::instance().println("     --complete --task-id 1\n");
-            UI::instance().println("  4. Export your tasks:");
+            UI::instance().println("  4. Set repeat interval for a task:");
+            UI::instance().println("     --repeat --task-id 1 --repeat-interval DAILY\n");
+            UI::instance().println("  5. Export your tasks:");
             UI::instance().println("     --export");
         }
     }

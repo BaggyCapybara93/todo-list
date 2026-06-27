@@ -98,8 +98,39 @@ void Console::handleRemoveTag() {
     
     if (taskManager_.get()->removeTag(tagName, tagId)) {
         std::cout << "Tag removed successfully.\n";
+    }
+}
+
+void Console::handleSetRepeatTask() {
+    std::cout << "\n--- Set Repeat Task ---\n";
+    std::cout << "Enter Task ID: ";
+    int taskId;
+    std::cin >> taskId;
+    std::cin.ignore();
+    
+    // Validate task ID
+    if (taskId <= 0) {
+        std::cerr << "Error: Task ID must be a positive number." << std::endl;
+        return;
+    }
+    
+    std::cout << "Enter repeat interval (NEVER, DAILY, WEEKLY, MONTHLY, YEARLY): ";
+    std::string intervalStr;
+    std::getline(std::cin, intervalStr);
+    
+    if (intervalStr.empty()) {
+        std::cerr << "Error: Repeat interval cannot be empty." << std::endl;
+        return;
+    }
+    
+    if (taskManager_.get()->setRepeatTask(taskId, intervalStr)) {
+        auto task = taskManager_.get()->getTask(taskId);
+        if (task.has_value()) {
+            std::cout << "Repeat interval set successfully for task ID " << taskId << ".\n";
+            std::cout << "Next due date: " << task->get()->getNextDueDateStr() << "\n";
+        }
     } else {
-        std::cout << "Failed to remove tag.\n";
+        std::cout << "Error: Failed to set repeat interval.\n";
     }
 }
 
@@ -117,6 +148,7 @@ void Console::displayMenu() {
     std::cout << "3. Complete Task\n";
     std::cout << "4. Add Tag\n";
     std::cout << "5. Remove Tag\n";
+    std::cout << "6. Set Repeat Task\n";
     std::cout << "8. File Operations\n";
     std::cout << "9. Exit\n";
     std::cout << "Enter your choice: ";
@@ -163,6 +195,6 @@ void Console::handleInput(std::string input) {
     if (commandMap_.count(input)) {
         commandMap_[input]();
     } else {
-        std::cout << "Invalid command. Please enter a number between 1 and 5.\n";
+        std::cout << "Invalid command. Please enter a number between 1 and 6.\n";
     }
 }

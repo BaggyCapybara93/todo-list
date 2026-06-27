@@ -85,6 +85,9 @@ bool FileManager::saveTodoList(const std::vector<std::shared_ptr<Task>>& tasks) 
             j["priority"] = task->getPriority();
             j["dueDate"] = task->getDueDateStr();
             
+            // Save repeat interval
+            j["repeatInterval"] = repeatIntervalToString(task->getRepeatInterval());
+            
             // Save tags for the task
             json tagsArray = json::array();
             for (const auto& tag : task->getTags()) {
@@ -100,6 +103,7 @@ bool FileManager::saveTodoList(const std::vector<std::shared_ptr<Task>>& tasks) 
     } catch (const std::exception& e) {
         Logger::log(Logger::LogLevel::ERROR, "Error saving todo list: " + std::string(e.what()));
         return false;
-    }   
+    }
 }
+
 

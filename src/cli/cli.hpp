@@ -35,6 +35,7 @@ class CLI {
         void handleAddTask();
         void handleListTasks();
         void handleCompleteTask();
+        void handleSetRepeatTask();
         void handleFileOperations();
         void handleAddTag();
         void handleRemoveTag();

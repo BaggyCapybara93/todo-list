@@ -28,6 +28,7 @@ class Console {
         void handleAddTask();
         void handleListTasks();
         void handleCompleteTask();
+        void handleSetRepeatTask();
         void handleFileOperations();
         void handleExit();
         void handleAddTag();

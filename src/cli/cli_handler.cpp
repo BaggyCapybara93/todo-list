@@ -204,3 +204,31 @@ void CLI::handleRemoveTag() {
         UI::instance().println("[ERROR] Unknown error removing tag: " + std::string(e.what()), Color::Red);
     }
 }
+
+void CLI::handleSetRepeatTask() {
+    try {
+        if (!config_.count("task-id")) {
+            UI::instance().println("[WARNING] Missing required argument for set repeat task.", Color::Yellow);
+            UI::instance().println("Use --task-id and --repeat-interval flags.", Color::Cyan);
+            return;
+        }
+
+        int taskId = config_["task-id"].as<int>();
+        std::string intervalStr = config_["repeat-interval"].as<std::string>();
+
+        if (intervalStr.empty()) {
+            UI::instance().println("[WARNING] Repeat interval cannot be empty.", Color::Yellow);
+            return;
+        }
+
+        if (taskManager_->setRepeatTask(taskId, intervalStr)) {
+            UI::instance().println("Repeat interval set successfully for task ID " + std::to_string(taskId) + ".", Color::Green);
+            UI::instance().println("Next due date: " + taskManager_->getTask(taskId).value()->getNextDueDateStr(), Color::Cyan);
+        } else {
+            UI::instance().println("[ERROR] Failed to set repeat interval.", Color::Red);
+        }
+
+    } catch (const std::exception& e) {
+        UI::instance().println("[ERROR] Unknown error setting repeat task: " + std::string(e.what()), Color::Red);
+    }
+}
