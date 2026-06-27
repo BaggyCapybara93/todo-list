@@ -42,6 +42,9 @@ class CLI {
         void handleHelp();
         void handleExit();
 
+        /**
+         * @brief Parse variables map for commands
+         */
         void parseVM(const po::variables_map& vm);
 
     public:
