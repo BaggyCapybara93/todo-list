@@ -25,6 +25,7 @@ void TaskManager::loadTasks() {
         auto tasksOpt = fileManager_.get()->loadTodoList();
         if (tasksOpt) {
             tasks_.clear();
+            int maxId = 0;
             for (const auto& task : *tasksOpt) {
                 if (setting_.maxTasksPerFile > 0 && tasks_.size() >= static_cast<size_t>(setting_.maxTasksPerFile)) {
                     Logger::log(Logger::LogLevel::WARNING, "Maximum tasks per file limit reached. Some tasks may not be loaded.");
@@ -37,7 +38,13 @@ void TaskManager::loadTasks() {
                 }
 
                 tasks_[task->getId()] = task;
+                // Update maxId to track the highest task ID
+                if (task->getId() > maxId) {
+                    maxId = task->getId();
+                }
             }
+            // Set nextId_ to maxId + 1 to avoid conflicts
+            nextId_ = maxId + 1;
             if (setting_.verbose) {
                 std::cout << "Tasks loaded successfully." << std::endl;
             }
