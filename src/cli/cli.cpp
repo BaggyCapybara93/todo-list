@@ -6,40 +6,46 @@ CLI::CLI(std::shared_ptr<TaskManager> tm, std::shared_ptr<FileManager> fm, po::v
     {parseVM(config_);}
 
 void CLI::execute() {
-    try{
-        if (config_.count("help") > 0) {
-            handleHelp();
-        } else if (config_.count("add") > 0) {
-            handleAddTask();
-        } else if (config_.count("list") > 0) {
-            handleListTasks();
-        } else if (config_.count("complete") > 0) {
-            handleCompleteTask();
-        } else if (config_.count("add-tag") > 0 || config_.count("tag-name") > 0) {
-            handleAddTag();
-        } else if (config_.count("remove-tag") > 0 || config_.count("tag-name") > 0 || config_.count("tag-id") > 0) {
-            handleRemoveTag();
-        } else if (config_.count("repeat") > 0 || config_.count("repeat-interval") > 0) {
-            handleSetRepeatTask();
-        }  else if (config_.count("export") > 0 || config_.count("import") > 0) {
-            handleFileOperations();
-        } else {
-            Logger::log(Logger::LogLevel::ERROR, "No command specified.");
-            Logger::log(Logger::LogLevel::INFO, "Use --help for more information.");
-            
-            handleExit();
+    try {
+
+        if (helpRequested_) {
+            displayHelp();
+            return;
         }
-    } catch(const std::exception& e){
-        Logger::log(Logger::LogLevel::ERROR, "Unknown error occured while handling command: "+ std::string(e.what()));
+
+        switch(command_) {
+            case ADD: handleAddTask(); break;
+            case LIST: handleListTasks(); break;
+            case COMPLETE: handleCompleteTask(); break;
+            case ADDTAG: handleAddTag(); break;
+            case REMOVETAG: handleRemoveTag(); break;
+            case REPEAT: handleSetRepeatTask(); break;
+            case IMPORT:
+            case EXPORT: handleFileOperations(); break;
+
+            case HELP:
+                displayHelp();
+                break;
+
+            default:
+                Logger::log(Logger::LogLevel::ERROR, "No command specified.");
+                Logger::log(Logger::LogLevel::INFO, "Use --help for more information.");
+                handleExit();
+                break;
+        }
+
+    } catch(const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR,
+            "Unknown error occurred while handling command: " + std::string(e.what()));
     }
 }
 
 //Move this later into a parse_arguments class
-void CLI::parseVM(const po::variables_map& vm){
-    // Parse command from variables_map
-    if (vm.count("help") > 0) {
-        command_ = HELP;
-    } else if (vm.count("add") > 0) {
+void CLI::parseVM(const po::variables_map& vm) {
+
+    bool wantsHelp = vm.count("help") > 0;
+
+    if (vm.count("add") > 0) {
         command_ = ADD;
     } else if (vm.count("list") > 0) {
         command_ = LIST;
@@ -49,13 +55,17 @@ void CLI::parseVM(const po::variables_map& vm){
         command_ = ADDTAG;
     } else if (vm.count("remove-tag") > 0 || vm.count("tag-name") > 0 || vm.count("tag-id") > 0) {
         command_ = REMOVETAG;
-    } else if (vm.count("repeat") > 0 || vm.count("repeat-interval") > 0) {
-        command_ = ADDTAG; // Reuse ADDTAG for repeat task
-    } else if (vm.count("export") > 0 || vm.count("import") > 0) {
-        command_ = (vm.count("export") > 0) ? EXPORT : IMPORT;
+    } else if (vm.count("export") > 0) {
+        command_ = EXPORT;
+    } else if (vm.count("import") > 0) {
+        command_ = IMPORT;
+    } else if (wantsHelp) {
+        command_ = HELP;
     } else {
         command_ = UNKNOWN;
     }
+
+    helpRequested_ = wantsHelp; //This isnt great but is fine for now
 }
 
 void CLI::displayHelp() {
@@ -94,10 +104,10 @@ void CLI::displayHelp() {
             UI::instance().println("    --remove-tag --tag-name \"Work\"\n");
             UI::instance().println("  Export all tasks:");
             UI::instance().println("    --export\n");
+            break;
         }
 
         case ADD: {
-            UI::instance().println("============================================", Color::White);
             UI::instance().println("ADD TASK (--add, -a)", Color::Green);
             UI::instance().println("============================================\n", Color::White);
             UI::instance().println("Add a new task to the todo list.\n");
@@ -109,10 +119,10 @@ void CLI::displayHelp() {
             UI::instance().println("    --priority, -p      Priority level (0-10), default: 5\n");
             UI::instance().println("  Example:");
             UI::instance().println("    --add --name \"Complete project\" --description \"Finish all features\" --due-date 2026-07-01 18:00:00 --priority 9");
+            break;
         }
 
         case LIST: {
-            UI::instance().println("============================================", Color::White);
             UI::instance().println("LIST TASKS (--list, -l)", Color::Green);
             UI::instance().println("============================================\n", Color::White);
             UI::instance().println("List all pending tasks in the todo list.\n");
@@ -128,10 +138,10 @@ void CLI::displayHelp() {
             UI::instance().println("    --list --due-date-min 2026-06-20 00:00:00");
             UI::instance().println("    --list --priority-min 5");
             UI::instance().println("    --list --priority-min 3 --priority-max 7");
+            break;
         }
 
         case COMPLETE: {
-            UI::instance().println("============================================", Color::White);
             UI::instance().println("COMPLETE TASK (--complete, -c)", Color::Green);
             UI::instance().println("============================================\n", Color::White);
             UI::instance().println("Mark a task as complete.\n");
@@ -139,10 +149,10 @@ void CLI::displayHelp() {
             UI::instance().println("    --task-id, -T       Task ID to complete (required)\n");
             UI::instance().println("  Example:");
             UI::instance().println("    --complete --task-id 1");
+            break;
         }
 
         case ADDTAG: {
-            UI::instance().println("============================================", Color::White);
             UI::instance().println("ADD TAG (--add-tag, -at)", Color::Green);
             UI::instance().println("============================================\n", Color::White);
             UI::instance().println("Add a new tag to organize tasks.\n");
@@ -151,10 +161,10 @@ void CLI::displayHelp() {
             UI::instance().println("    --tag-description, -td  Tag description (required)\n");
             UI::instance().println("  Example:");
             UI::instance().println("    --add-tag --tag-name \"Work\" --tag-description \"Work-related tasks\"");
+            break;
         }
 
         case REMOVETAG: {
-            UI::instance().println("============================================", Color::White);
             UI::instance().println("REMOVE TAG (--remove-tag, -rt)", Color::Green);
             UI::instance().println("============================================\n", Color::White);
             UI::instance().println("Remove a tag from the todo list.\n");
@@ -163,10 +173,10 @@ void CLI::displayHelp() {
             UI::instance().println("    --tag-id, -tid      Tag ID (alternative to name)\n");
             UI::instance().println("  Example:");
             UI::instance().println("    --remove-tag --tag-name \"Work\"");
+            break;
         }
 
         case EXPORT: {
-            UI::instance().println("============================================", Color::White);
             UI::instance().println("EXPORT TASKS (--export, -e)", Color::Green);
             UI::instance().println("============================================\n", Color::White);
 
@@ -176,10 +186,10 @@ void CLI::displayHelp() {
             UI::instance().println("    " + fileManager_.get()->getTodoFilePath() + "\n");
 
             UI::instance().println("Use this to backup your tasks or transfer them to another device.");
+            break;
         }
 
         case IMPORT: {
-            UI::instance().println("============================================", Color::White);
             UI::instance().println("IMPORT TASKS (--import, -i)", Color::Green);
             UI::instance().println("============================================\n", Color::White);
 
@@ -189,11 +199,11 @@ void CLI::displayHelp() {
             UI::instance().println("    " + fileManager_.get()->getTodoFilePath() + "\n");
 
             UI::instance().println("Use this to restore your tasks or import from another device.");
+            break;
         }
 
         default:
         case UNKNOWN: {
-            UI::instance().println("============================================", Color::White);
             UI::instance().println("COMMANDS", Color::Green);
             UI::instance().println("============================================\n", Color::White);
             UI::instance().println("  --help, -h          Show this help message");
@@ -220,6 +230,7 @@ void CLI::displayHelp() {
             UI::instance().println("     --repeat --task-id 1 --repeat-interval DAILY\n");
             UI::instance().println("  5. Export your tasks:");
             UI::instance().println("     --export");
+            break;
         }
     }
 }

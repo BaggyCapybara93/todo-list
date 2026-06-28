@@ -21,6 +21,7 @@ enum CLICommand{
     REMOVETAG,
     EXPORT,
     IMPORT,
+    REPEAT,
     UNKNOWN
 };
 
@@ -30,6 +31,7 @@ class CLI {
         std::shared_ptr<FileManager> fileManager_;
         po::variables_map config_;
         CLICommand command_;
+        bool helpRequested_ = false;
 
         // CLI command handlers
         void handleAddTask();
