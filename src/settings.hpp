@@ -1,19 +1,28 @@
 #pragma once
 #include <string>
 
-struct Settings{
-    int maxTasksPerFile;
-    bool enableAutosave ;
+class Settings{
+    private:
+        int maxTasksPerFile = 1000;
+        bool enableAutosave = true;
 
-    bool verbose;
+        bool verbose = false;
 
-    Settings() : maxTasksPerFile(1000), enableAutosave(true), verbose(false) {}
+    public:
+        Settings(){};
+        ~Settings() = default;
+
+        //Getters
+        const int& getMaxTasksPerFile() const{return maxTasksPerFile;}
+        const bool& getEnableAutosave() const{return enableAutosave;}
+        const bool& getVerbose() const{return verbose;}
+
+        //Setters   
+        void setMaxTasksPerFile(const int& value){maxTasksPerFile = value;}
+        void setEnableAutosave(const bool& value){enableAutosave = value;}
+        void setVerbose(const bool& value){verbose = value;}
+
+        void loadSettings(const std::string& settingsFilePath = "settings.txt");
+
+        void saveSettings(const std::string& settingsFilePath = "settings.txt");
 };
-
-extern Settings setting_;
-
-Settings loadSettings(const std::string& settingsFilePath = "settings.txt");
-
-Settings saveSettings(const std::string& settingsFilePath = "settings.txt");
-
-std::string getDefaultSettingsPath(); 

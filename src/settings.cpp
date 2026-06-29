@@ -4,15 +4,11 @@
 #include <iostream>
 #include "logger.hpp"
 
-// Default settings
-Settings setting_;
-
 // Load settings from file
-Settings loadSettings(const std::string& settingsFilePath) {
+void Settings::loadSettings(const std::string& settingsFilePath) {
     std::ifstream file(settingsFilePath);
     if (!file.is_open()) {
-        if(setting_.verbose) Logger::log(Logger::LogLevel::INFO, "No existing settings file found. Using defaults.");
-        return setting_;
+        if(verbose) Logger::log(Logger::LogLevel::INFO, "No existing settings file found. Using defaults.");
     }
 
     std::string line;
@@ -32,19 +28,19 @@ Settings loadSettings(const std::string& settingsFilePath) {
 
             if (key == "max_tasks_per_file") {
                 try {
-                    setting_.maxTasksPerFile = std::stoi(value);
+                    maxTasksPerFile = std::stoi(value);
                 } catch (const std::exception& e) {
                     Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for max_tasks_per_file");
                 }
             } else if (key == "enable_autosave") {
                 try {
-                    setting_.enableAutosave = (value == "true" || value == "1");
+                    enableAutosave = (value == "true" || value == "1");
                 } catch (const std::exception& e) {
                     Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for enable_autosave");
                 }
             } else if (key == "verbose") {
                 try {
-                    setting_.verbose = (value == "true" || value == "1");
+                    verbose = (value == "true" || value == "1");
                 } catch (const std::exception& e) {
                     Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for verbose");
                 }
@@ -54,25 +50,17 @@ Settings loadSettings(const std::string& settingsFilePath) {
             }
         }
     }
-
-    return setting_;
 }
 
 // Save settings to file
-Settings saveSettings(const std::string& settingsFilePath) {
+void Settings::saveSettings(const std::string& settingsFilePath) {
     std::ofstream file(settingsFilePath);
     if (!file.is_open()) {
         Logger::log(Logger::LogLevel::ERROR, "Failed to open settings file for writing.");
-        return setting_;
     }
 
-    file << "max_tasks_per_file=" << setting_.maxTasksPerFile << std::endl;
-    file << "enable_autosave=" << (setting_.enableAutosave ? "true" : "false") << std::endl;
-
-    return setting_;
+    file << "max_tasks_per_file=" << maxTasksPerFile << std::endl;
+    file << "enable_autosave=" << (enableAutosave ? "true" : "false") << std::endl;
+    file << "verbose=" << (verbose ? "true" : "false") << std::endl;
 }
 
-// Get default settings path
-std::string getDefaultSettingsPath() {
-    return "settings.txt";
-}

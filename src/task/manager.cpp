@@ -5,14 +5,15 @@
 #include "utils/utils.hpp"
 
 // Constructor implementation
-TaskManager::TaskManager(std::shared_ptr<FileManager> fm, std::shared_ptr<TagManager> tm) : nextId_(1), fileManager_(fm), tagManager_(tm) {
+TaskManager::TaskManager(std::shared_ptr<FileManager> fm, std::shared_ptr<TagManager> tm, std::shared_ptr<Settings> s)
+    : nextId_(1), fileManager_(fm), tagManager_(tm), settings_(s) {
     loadTasks();
 }
 
 // Destructor to save tasks if autosave is enabled
 TaskManager::~TaskManager() {
     try {
-        if (setting_.enableAutosave) {
+        if (settings_.get()->getEnableAutosave()) {
             saveTasks();
         }
     } catch (const std::exception& e) {
@@ -27,7 +28,7 @@ void TaskManager::loadTasks() {
             tasks_.clear();
             int maxId = 0;
             for (const auto& task : *tasksOpt) {
-                if (setting_.maxTasksPerFile > 0 && tasks_.size() >= static_cast<size_t>(setting_.maxTasksPerFile)) {
+                if (settings_.get()->getMaxTasksPerFile() > 0 && tasks_.size() >= static_cast<size_t>(settings_.get()->getMaxTasksPerFile())) {
                     Logger::log(Logger::LogLevel::WARNING, "Maximum tasks per file limit reached. Some tasks may not be loaded.");
                     break;
                 }
@@ -45,7 +46,7 @@ void TaskManager::loadTasks() {
             }
             // Set nextId_ to maxId + 1 to avoid conflicts
             nextId_ = maxId + 1;
-            if (setting_.verbose) {
+            if (settings_.get()->getVerbose()) {
                 std::cout << "Tasks loaded successfully." << std::endl;
             }
         } else {
@@ -62,7 +63,7 @@ void TaskManager::saveTasks() {
         for (const auto& pair : tasks_) {
             tasksToSave.push_back(pair.second);
         }
-        if (fileManager_.get()->saveTodoList(tasksToSave) && setting_.verbose) {
+        if (fileManager_.get()->saveTodoList(tasksToSave) && settings_.get()->getVerbose()) {
             std::cout << "Tasks saved successfully." << std::endl;
         }
     } catch (const std::exception& e) {

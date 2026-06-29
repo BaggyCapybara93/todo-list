@@ -13,9 +13,10 @@ class TaskManager{
         std::unordered_map<int, std::shared_ptr<Task>> tasks_;
         std::shared_ptr<FileManager> fileManager_;
         std::shared_ptr<TagManager> tagManager_;
+        std::shared_ptr<Settings> settings_;
 
     public:
-        TaskManager(std::shared_ptr<FileManager> fm, std::shared_ptr<TagManager> tm);
+        TaskManager(std::shared_ptr<FileManager> fm, std::shared_ptr<TagManager> tm, std::shared_ptr<Settings> s);
         
         ~TaskManager(); // Destructor for autosave
         

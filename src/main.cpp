@@ -22,16 +22,20 @@ int main(int argc, char* argv[]) {
     const std::string settingsFilePath = ".settings.txt";
 
     // Load settings from file (returns default settings if file doesn't exist)
-    auto settings = std::make_shared<Settings>(loadSettings(settingsFilePath));
+    auto settings = std::make_shared<Settings>();
+    settings.get()->loadSettings(settingsFilePath);
     auto fileManager = std::make_shared<FileManager>(todoFilePath);
     auto tagManager = std::make_shared<TagManager>(settings);
-    auto taskManager = std::make_shared<TaskManager>(fileManager, tagManager);
+    auto taskManager = std::make_shared<TaskManager>(fileManager, tagManager, settings);
 
     po::options_description desc("Allowed options");
+    bool verboseFlag = false;
+    int maxTasks = 0;
     desc.add_options()
         ("help,h", "Show help message")
         ("menu,m", "Run in interactive menu mode")
-        ("verbose,v", po::bool_switch(&setting_.verbose)->default_value(false),"Print verbose output")
+        ("verbose,v", po::bool_switch(&verboseFlag)->default_value(false),"Print verbose output")
+        ("max-tasks,mt", po::value(&maxTasks)->default_value(1000),"Maximum number of tasks to display")
         ("add,a", "Add a new task")
         ("list,l", "List all tasks")
         ("complete,c", "Complete a task")
@@ -56,6 +60,8 @@ int main(int argc, char* argv[]) {
         ("due-date-max,dM", po::value<std::string>(), "Maximum due date (YYYY-MM-DD HH:MM:SS) for filtering")
         ("priority-min,pm", po::value<int>(), "Minimum priority (0-10) for filtering")
         ("priority-max,pM", po::value<int>(), "Maximum priority (0-10) for filtering");
+    if(verboseFlag) settings.get()->setVerbose(verboseFlag); //Remove these in the future
+    if(maxTasks != 0) settings.get()->setMaxTasksPerFile(maxTasks);
 
     po::variables_map vm;
     try {
