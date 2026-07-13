@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wold-style-cast -Wcast-align -Wformat=2
 set(TODO_SOURCES 
     src/main.cpp 
     src/task/manager.cpp
+    src/task/getters.cpp
     src/file_manager/fileManager.cpp
     src/settings.cpp
     src/utils/utils.cpp
