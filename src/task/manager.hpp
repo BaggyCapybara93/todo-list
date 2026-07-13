@@ -20,7 +20,7 @@ class TaskManager{
         
         ~TaskManager(); // Destructor for autosave
         
-        void addTask(const std::string& name, const std::string& description, int priority, const std::chrono::system_clock::time_point& dueDate);
+        int addTask(const std::string& name, const std::string& description, int priority, const std::chrono::system_clock::time_point& dueDate);
         
         void deleteTask(int id);
         
@@ -82,5 +82,21 @@ class TaskManager{
         
         void saveTasks();
         
+        //Subtask and Dependency Management
+        std::unordered_set<std::shared_ptr<Task>> getSubtasks(int taskId);
+        void addSubtask(int taskId, const std::shared_ptr<Task>& subtask);
+        void removeSubtask(int taskId, const std::shared_ptr<Task>& subtask);
+        std::shared_ptr<Task> getSubtaskById(int taskId, int subtaskId);
+        std::shared_ptr<Task> getSubtaskByName(int taskId, const std::string& subtaskName);
+        bool hasSubtask(int taskId);
+
+        std::unordered_set<std::shared_ptr<Task>> getDependencies(int taskId);
+        void addDependency(int taskId, const std::shared_ptr<Task>& dependency);
+        void removeDependency(int taskId, const std::shared_ptr<Task>& dependency);
+        std::shared_ptr<Task> getDependencyById(int taskId, int dependencyId);
+        std::shared_ptr<Task> getDependencyByName(int taskId, const std::string& dependencyName);
+        bool hasDependency(int taskId);
+
+        //Helper Functions
         std::chrono::system_clock::time_point parseDueDate(const std::string& dueDateStr);
 };      

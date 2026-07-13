@@ -7,7 +7,6 @@
 
 #include "file_manager/fileManager.hpp"
 #include "task/manager.hpp"
-#include "console/console.hpp"
 #include "cli/cli.hpp"
 #include "settings.hpp"
 #include "logger.hpp"
@@ -46,6 +45,8 @@ int main(int argc, char* argv[]) {
         ("name,n", po::value<std::string>(), "Task name for add task operation")
         ("description,d", po::value<std::string>(), "Task description for add task operation")
         ("due-date,u", po::value<std::string>(), "Due date in YYYY-MM-DD HH:MM:SS format for add task")
+        ("subtask", po::value<int>(), "Task ID of the primary task to attach the new task as a subtask to")
+        ("dependency", po::value<int>(), "Task ID of the primary task to attach the new task as a dependency to")
         // Tag options
         ("add-tag,at", "Add a new tag")
         ("remove-tag,rt", "Remove a tag")
@@ -73,23 +74,9 @@ int main(int argc, char* argv[]) {
         
         exit(1);
     }
-
-    // Check if menu mode is enabled via CLI
-    if (vm.count("menu") > 0) {
-        // Run in interactive menu mode using original ConsoleUI
-        Console console(taskManager, fileManager);
-        while (true) {
-            console.displayMenu();
-            std::string input;
-            std::cout << "> ";
-            std::getline(std::cin, input);
-            console.handleInput(input);
-        }
-    } else {
-        // Run with CLI options using new CLIHandler
-        CLI cli(taskManager, fileManager, vm);
-        cli.execute();
-    }
+    // Run with CLI options using new CLIHandler
+    CLI cli(taskManager, fileManager, vm);
+    cli.execute();
 
     return 0;
 }

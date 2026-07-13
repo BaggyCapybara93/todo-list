@@ -28,12 +28,62 @@ void CLI::handleAddTask() {
 
         auto dueDate = parseDueDate(dueDateStr);
 
-        taskManager_->addTask(name, description, priority, dueDate);
+        int newTaskId = taskManager_->addTask(name, description, priority, dueDate);
+        if (newTaskId < 0) {
+            UI::instance().println("[ERROR] Failed to add task.", Color::Red);
+            return;
+        }
+
+        auto newTask = taskManager_->getTask(newTaskId);
+        if (!newTask.has_value()) {
+            UI::instance().println("[ERROR] Added task could not be loaded.", Color::Red);
+            return;
+        }
+
+        if (config_.count("subtask") > 0) {
+            int parentTaskId = config_["subtask"].as<int>();
+            auto parentTask = taskManager_->getTask(parentTaskId);
+            if (!parentTask.has_value()) {
+                UI::instance().println("[WARNING] Parent task ID " + std::to_string(parentTaskId) + " was not found for subtask link.", Color::Yellow);
+            } else {
+                taskManager_->addSubtask(parentTaskId, newTask.value());
+                UI::instance().println("Task linked as a subtask of task ID " + std::to_string(parentTaskId) + ".", Color::Cyan);
+            }
+        }
+
+        if (config_.count("dependency") > 0) {
+            int parentTaskId = config_["dependency"].as<int>();
+            auto parentTask = taskManager_->getTask(parentTaskId);
+            if (!parentTask.has_value()) {
+                UI::instance().println("[WARNING] Parent task ID " + std::to_string(parentTaskId) + " was not found for dependency link.", Color::Yellow);
+            } else {
+                taskManager_->addDependency(parentTaskId, newTask.value());
+                UI::instance().println("Task linked as a dependency of task ID " + std::to_string(parentTaskId) + ".", Color::Cyan);
+            }
+        }
 
         UI::instance().println("Task added successfully.", Color::Green);
 
     } catch (const std::exception& e) {
         UI::instance().println("[ERROR] Unknown error adding task: " + std::string(e.what()), Color::Red);
+    }
+}
+
+void CLI::printTaskWithRelations(const std::shared_ptr<Task>& task) {
+    UI::instance().println(task->toString(), Color::White);
+
+    if (taskManager_->hasSubtask(task.get()->getId())) {
+        UI::instance().println("  Subtasks:", Color::Cyan);
+        for (const auto& sub : taskManager_->getSubtasks(task.get()->getId())) {
+            UI::instance().println("    - " + sub->toString(), Color::White);
+        }
+    }
+
+    if (taskManager_->hasDependency(task.get()->getId())) {
+        UI::instance().println("  Dependencies:", Color::Yellow);
+        for (const auto& dep : taskManager_->getDependencies(task.get()->getId())) {
+            UI::instance().println("    - " + dep->toString(), Color::White);
+        }
     }
 }
 
@@ -80,7 +130,7 @@ void CLI::handleListTasks() {
             UI::instance().println("No pending tasks found.", Color::Yellow);
         } else {
             for (const auto& task : *tasksToDisplay) {
-                UI::instance().println(task->toString(), Color::White);
+                printTaskWithRelations(task);   // <-- NEW LINE
             }
         }
 

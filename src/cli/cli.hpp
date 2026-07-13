@@ -33,6 +33,8 @@ class CLI {
         CLICommand command_;
         bool helpRequested_ = false;
 
+        void printTaskWithRelations(const std::shared_ptr<Task>& task);
+
         // CLI command handlers
         void handleAddTask();
         void handleListTasks();

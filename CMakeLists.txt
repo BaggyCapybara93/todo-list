@@ -16,8 +16,6 @@ set(TODO_SOURCES
     src/tag/manager.cpp
     src/cli/cli_handler.cpp
     src/cli/cli.cpp
-    src/console/console.cpp
-    src/console/console_handler.cpp
 )
 
 add_executable(todo ${TODO_SOURCES})

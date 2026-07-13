@@ -116,9 +116,12 @@ void CLI::displayHelp() {
             UI::instance().println("    --description, -d   Task description (required)");
             UI::instance().println("    --due-date, -u      Due date in YYYY-MM-DD HH:MM:SS format (required)\n");
             UI::instance().println("  Optional options:");
-            UI::instance().println("    --priority, -p      Priority level (0-10), default: 5\n");
+            UI::instance().println("    --priority, -p      Priority level (0-10), default: 5");
+            UI::instance().println("    --subtask <id>      Attach this task as a subtask of the given task ID");
+            UI::instance().println("    --dependency <id>   Attach this task as a dependency of the given task ID\n");
             UI::instance().println("  Example:");
             UI::instance().println("    --add --name \"Complete project\" --description \"Finish all features\" --due-date 2026-07-01 18:00:00 --priority 9");
+            UI::instance().println("    --add --name \"Write report\" --description \"Draft summary\" --due-date 2026-07-02 09:00:00 --subtask 1");
             break;
         }
 

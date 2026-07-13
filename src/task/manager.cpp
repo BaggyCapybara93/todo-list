@@ -71,20 +71,22 @@ void TaskManager::saveTasks() {
     }
 }
 
-void TaskManager::addTask(const std::string& name, const std::string& description, int priority, const std::chrono::system_clock::time_point& dueDate) {
+int TaskManager::addTask(const std::string& name, const std::string& description, int priority, const std::chrono::system_clock::time_point& dueDate) {
     try{
         int taskId = nextId_++;
 
         if(priority < 0 || priority > 10) {
             Logger::log(Logger::LogLevel::WARNING, "Priority must be between 0 and 10.");
-            return;
+            return -1;
         }
 
         auto newTask = std::make_shared<Task>(taskId, name, description, false, priority, dueDate);
         tasks_[taskId] = newTask;
         saveTasks();
+        return taskId;
     } catch (const std::exception& e) {
         Logger::log(Logger::LogLevel::ERROR, std::string(e.what()));
+        return -1;
     }
 }
 
@@ -132,6 +134,29 @@ const std::optional<std::shared_ptr<Task>> TaskManager::getTaskName(const std::s
 bool TaskManager::completeTask(int id) {
     try {
         if (tasks_.count(id)) {
+            if (tasks_[id]->getIsCompleted()) {
+                Logger::log(Logger::LogLevel::INFO, "Task already completed: " + std::to_string(id));
+                return false;
+            }
+
+            if(hasDependency(id)) {
+                for (const auto& dep : tasks_[id]->getDependencies()) {
+                    if (!dep->getIsCompleted()) {
+                        Logger::log(Logger::LogLevel::WARNING, "Cannot complete task " + std::to_string(id) + " because dependency " + std::to_string(dep->getId()) + " is not completed.");
+                        return false;
+                    }
+                }
+            }
+
+            if(hasSubtask(id)) {
+                for (const auto& subtask : tasks_[id]->getSubtasks()) {
+                    if (!subtask->getIsCompleted()) {
+                        Logger::log(Logger::LogLevel::WARNING, "Cannot complete task " + std::to_string(id) + " because subtask " + std::to_string(subtask->getId()) + " is not completed.");
+                        return false;
+                    }
+                }
+            }
+
             // Logic to mark task as complete
             tasks_[id]->setIsCompleted(true);
             saveTasks();
@@ -297,6 +322,174 @@ RepeatInterval TaskManager::getRepeatInterval(int taskId) {
         return taskOpt.value()->getRepeatInterval();
     }
     return RepeatInterval::NEVER;
+}
+
+//Subtasks and Dependencies
+std::unordered_set<std::shared_ptr<Task>> TaskManager::getSubtasks(int taskId) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (taskOpt.has_value()) {
+            return taskOpt.value()->getSubtasks();
+        }
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error retrieving subtasks for task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+    return {};
+}
+
+void TaskManager::addSubtask(int taskId, const std::shared_ptr<Task>& subtask) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (!taskOpt.has_value()) {
+            Logger::log(Logger::LogLevel::WARNING, "Task not found: " + std::to_string(taskId));
+            return;
+        }
+
+        if (!subtask) {
+            Logger::log(Logger::LogLevel::WARNING, "Subtask is null for task " + std::to_string(taskId));
+            return;
+        }
+
+        auto task = taskOpt.value();
+        task->addSubtask(subtask);
+        saveTasks();
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error adding subtask to task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+}
+
+void TaskManager::removeSubtask(int taskId, const std::shared_ptr<Task>& subtask) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (!taskOpt.has_value()) {
+            Logger::log(Logger::LogLevel::WARNING, "Task not found: " + std::to_string(taskId));
+            return;
+        }
+
+        if (!subtask) {
+            Logger::log(Logger::LogLevel::WARNING, "Subtask is null for task " + std::to_string(taskId));
+            return;
+        }
+
+        auto task = taskOpt.value();
+        task->removeSubtask(subtask);
+        saveTasks();
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error removing subtask from task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+}
+
+std::shared_ptr<Task> TaskManager::getSubtaskById(int taskId, int subtaskId) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (taskOpt.has_value()) {
+            return taskOpt.value()->getSubtaskById(subtaskId);
+        }
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error retrieving subtask by id for task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+    return nullptr;
+}
+
+std::shared_ptr<Task> TaskManager::getSubtaskByName(int taskId, const std::string& subtaskName) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (taskOpt.has_value()) {
+            return taskOpt.value()->getSubtaskByName(subtaskName);
+        }
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error retrieving subtask by name for task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+    return nullptr;
+}
+
+bool TaskManager::hasSubtask(int taskId) {
+    return !getSubtasks(taskId).empty();
+}
+
+std::unordered_set<std::shared_ptr<Task>> TaskManager::getDependencies(int taskId) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (taskOpt.has_value()) {
+            return taskOpt.value()->getDependencies();
+        }
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error retrieving dependencies for task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+    return {};
+}
+
+void TaskManager::addDependency(int taskId, const std::shared_ptr<Task>& dependency) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (!taskOpt.has_value()) {
+            Logger::log(Logger::LogLevel::WARNING, "Task not found: " + std::to_string(taskId));
+            return;
+        }
+
+        if (!dependency) {
+            Logger::log(Logger::LogLevel::WARNING, "Dependency is null for task " + std::to_string(taskId));
+            return;
+        }
+
+        auto task = taskOpt.value();
+        task->addDependency(dependency);
+        saveTasks();
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error adding dependency to task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+}
+
+void TaskManager::removeDependency(int taskId, const std::shared_ptr<Task>& dependency) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (!taskOpt.has_value()) {
+            Logger::log(Logger::LogLevel::WARNING, "Task not found: " + std::to_string(taskId));
+            return;
+        }
+
+        if (!dependency) {
+            Logger::log(Logger::LogLevel::WARNING, "Dependency is null for task " + std::to_string(taskId));
+            return;
+        }
+
+        auto task = taskOpt.value();
+        task->removeDependency(dependency);
+        saveTasks();
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error removing dependency from task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+}
+
+std::shared_ptr<Task> TaskManager::getDependencyById(int taskId, int dependencyId) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (taskOpt.has_value()) {
+            return taskOpt.value()->getDependencyById(dependencyId);
+        }
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error retrieving dependency by id for task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+    return nullptr;
+}
+
+std::shared_ptr<Task> TaskManager::getDependencyByName(int taskId, const std::string& dependencyName) {
+    try {
+        auto taskOpt = getTask(taskId);
+        if (taskOpt.has_value()) {
+            return taskOpt.value()->getDependencyByName(dependencyName);
+        }
+    } catch (const std::exception& e) {
+        Logger::log(Logger::LogLevel::ERROR, "Error retrieving dependency by name for task " + std::to_string(taskId) + ": " + std::string(e.what()));
+    }
+    return nullptr;
+}
+
+bool TaskManager::hasDependency(int taskId) {
+    if (tasks_.count(taskId)) {
+        return !tasks_[taskId]->getDependencies().empty();
+    }
+    return false;
 }
 
 void TaskManager::calculateNextDueDates() {
