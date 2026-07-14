@@ -10,6 +10,7 @@ set(TODO_SOURCES
     src/main.cpp 
     src/task/manager.cpp
     src/task/getters.cpp
+    src/task/filter.cpp
     src/file_manager/fileManager.cpp
     src/settings.cpp
     src/utils/utils.cpp
