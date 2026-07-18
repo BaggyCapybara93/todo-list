@@ -12,6 +12,7 @@
 #include "logger.hpp"
 #include "ui.hpp"
 #include "tag/manager.hpp"
+#include "parse_arguments/parser.hpp"
 
 namespace po = boost::program_options;
 
@@ -27,55 +28,13 @@ int main(int argc, char* argv[]) {
     auto tagManager = std::make_shared<TagManager>(settings);
     auto taskManager = std::make_shared<TaskManager>(fileManager, tagManager, settings);
 
-    po::options_description desc("Allowed options");
-    bool verboseFlag = false;
-    int maxTasks = 0;
-    desc.add_options()
-        ("help,h", "Show help message")
-        ("menu,m", "Run in interactive menu mode")
-        ("verbose,v", po::bool_switch(&verboseFlag)->default_value(false),"Print verbose output")
-        ("max-tasks,mt", po::value(&maxTasks)->default_value(1000),"Maximum number of tasks to display")
-        ("add,a", "Add a new task")
-        ("list,l", "List all tasks")
-        ("complete,c", "Complete a task")
-        ("export,e", "Export tasks to file")
-        ("import,i", "Import tasks from file")
-        ("priority,p", po::value<int>()->default_value(5), "Priority level (0-10) for add task")
-        ("task-id,T", po::value<int>(), "Task ID for complete task operation")
-        ("name,n", po::value<std::string>(), "Task name for add task operation")
-        ("description,d", po::value<std::string>(), "Task description for add task operation")
-        ("due-date,u", po::value<std::string>(), "Due date in YYYY-MM-DD HH:MM:SS format for add task")
-        ("subtask", po::value<int>(), "Task ID of the primary task to attach the new task as a subtask to")
-        ("dependency", po::value<int>(), "Task ID of the primary task to attach the new task as a dependency to")
-        // Tag options
-        ("add-tag,at", "Add a new tag")
-        ("remove-tag,rt", "Remove a tag")
-        ("tag-name,tn", po::value<std::string>(), "Tag name for add/remove tag operation")
-        ("tag-description,td", po::value<std::string>(), "Tag description for add tag operation")
-        ("tag-id,tid", po::value<int>(), "Tag ID for remove tag operation")
-        // Repeat task options
-        ("repeat,r", "Set repeat interval for a task")
-        ("repeat-interval", po::value<std::string>(), "Repeat interval (NEVER, DAILY, WEEKLY, MONTHLY, YEARLY) for repeat task")
-        // Filter options for list command
-        ("due-date-min,dm", po::value<std::string>(), "Minimum due date (YYYY-MM-DD HH:MM:SS) for filtering")
-        ("due-date-max,dM", po::value<std::string>(), "Maximum due date (YYYY-MM-DD HH:MM:SS) for filtering")
-        ("priority-min,pm", po::value<int>(), "Minimum priority (0-10) for filtering")
-        ("priority-max,pM", po::value<int>(), "Maximum priority (0-10) for filtering");
-    if(verboseFlag) settings.get()->setVerbose(verboseFlag); //Remove these in the future
-    if(maxTasks != 0) settings.get()->setMaxTasksPerFile(maxTasks);
-
-    po::variables_map vm;
-    try {
-        po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
-        po::notify(vm);
-    } catch (const po::error& ex) {
-        Logger::log(Logger::LogLevel::ERROR, ex.what());
-        UI::instance().println("Error parsing command line options.");
-        
-        exit(1);
+    Parser parser;
+    if (!parser.parse(argc, argv, settings)) {
+        std::cerr << "Error parsing command-line arguments." << std::endl;
     }
+
     // Run with CLI options using new CLIHandler
-    CLI cli(taskManager, fileManager, vm);
+    CLI cli(taskManager, fileManager, parser.getVariablesMap());
     cli.execute();
 
     return 0;

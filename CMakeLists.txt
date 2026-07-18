@@ -18,6 +18,8 @@ set(TODO_SOURCES
     src/tag/manager.cpp
     src/cli/cli_handler.cpp
     src/cli/cli.cpp
+    src/parse_arguments/parser.cpp
+    src/parse_arguments/arguments.cpp
 )
 
 add_executable(todo ${TODO_SOURCES})
