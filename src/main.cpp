@@ -17,13 +17,25 @@
 namespace po = boost::program_options;
 
 int main(int argc, char* argv[]) {
-    // Define the path for the local todo list file
-    const std::string todoFilePath = ".todo_list.txt";
-    const std::string settingsFilePath = ".settings.txt";
+    // Define default paths for the local todo list and settings files
+    const std::string defaultTodoFilePath = ".todo_list.txt";
+    const std::string defaultSettingsFilePath = ".settings.txt";
 
     // Load settings from file (returns default settings if file doesn't exist)
     auto settings = std::make_shared<Settings>();
-    settings.get()->loadSettings(settingsFilePath);
+    settings.get()->loadSettings(defaultSettingsFilePath);
+    
+    // Get file paths from settings or use defaults
+    std::string todoFilePath = settings.get()->getTodoFilePath();
+    if (todoFilePath.empty()) {
+        todoFilePath = defaultTodoFilePath;
+    }
+    
+    std::string settingsFilePath = settings.get()->getSettingsFilePath();
+    if (settingsFilePath.empty()) {
+        settingsFilePath = defaultSettingsFilePath;
+    }
+    
     auto fileManager = std::make_shared<FileManager>(todoFilePath);
     auto tagManager = std::make_shared<TagManager>(settings);
     auto taskManager = std::make_shared<TaskManager>(fileManager, tagManager, settings);

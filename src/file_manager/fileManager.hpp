@@ -37,4 +37,25 @@ public:
 
 private:
     std::string todoFilePath_;
+    
+    /**
+         * @brief Checks if file path is valid and accessible
+         * @param filePath Path to check
+         * @return True if valid, false otherwise
+    */
+    bool isValidFilePath(const std::string& filePath) const;
+    
+    /**
+         * @brief Checks file permissions for reading
+         * @param filePath Path to check
+         * @return True if readable, false otherwise
+    */
+    bool isFileReadable(const std::string& filePath) const;
+    
+    /**
+         * @brief Checks file permissions for writing
+         * @param filePath Path to check
+         * @return True if writable, false otherwise
+    */
+    bool isFileWritable(const std::string& filePath) const;
 };

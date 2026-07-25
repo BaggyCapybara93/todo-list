@@ -5,8 +5,8 @@
 #include "logger.hpp"
 
 // Load settings from file
-void Settings::loadSettings(const std::string& settingsFilePath) {
-    std::ifstream file(settingsFilePath);
+void Settings::loadSettings(const std::string& settingsFilepath) {
+    std::ifstream file(settingsFilepath);
     if (!file.is_open()) {
         if(verbose) Logger::log(Logger::LogLevel::INFO, "No existing settings file found. Using defaults.");
     }
@@ -44,7 +44,19 @@ void Settings::loadSettings(const std::string& settingsFilePath) {
                 } catch (const std::exception& e) {
                     Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for verbose");
                 }
-            }else {
+            } else if (key == "todo_file_path") {
+                try {
+                    todoFilePath = value;
+                } catch (const std::exception& e) {
+                    Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for todo_file_path");
+                }
+            } else if (key == "settings_file_path") {
+                try {
+                    settingsFilePath = value;
+                } catch (const std::exception& e) {
+                    Logger::log(Logger::LogLevel::WARNING, "Failed to parse line " + std::to_string(lineNum) + ": invalid value '" + value + "' for settings_file_path");
+                }
+            } else {
                 // Unknown key - skip it with a warning
                 Logger::log(Logger::LogLevel::WARNING, "Unknown setting key '" + key + "' on line " + std::to_string(lineNum) + ", skipping.");
             }
@@ -53,14 +65,17 @@ void Settings::loadSettings(const std::string& settingsFilePath) {
 }
 
 // Save settings to file
-void Settings::saveSettings(const std::string& settingsFilePath) {
-    std::ofstream file(settingsFilePath);
+void Settings::saveSettings(const std::string& settingsFilepath) {
+    std::ofstream file(settingsFilepath);
     if (!file.is_open()) {
         Logger::log(Logger::LogLevel::ERROR, "Failed to open settings file for writing.");
+        return;
     }
 
     file << "max_tasks_per_file=" << maxTasksPerFile << std::endl;
     file << "enable_autosave=" << (enableAutosave ? "true" : "false") << std::endl;
     file << "verbose=" << (verbose ? "true" : "false") << std::endl;
+    file << "todo_file_path=" << todoFilePath << std::endl;
+    file << "settings_file_path=" << settingsFilePath << std::endl;
 }
 

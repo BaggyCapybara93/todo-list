@@ -6,10 +6,67 @@
 #include <nlohmann/json.hpp>
 #include <ctime>
 #include <sstream>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 using json = nlohmann::json;
 
 FileManager::FileManager(const std::string& todoFilePath) : todoFilePath_(todoFilePath) {}
+
+bool FileManager::isValidFilePath(const std::string& filePath) const {
+    struct stat fileStat;
+    if (stat(filePath.c_str(), &fileStat) != 0) {
+        return false;
+    }
+    
+    // Check if it's a regular file
+    if (!S_ISREG(fileStat.st_mode)) {
+        return false;
+    }
+    
+    return true;
+}
+
+bool FileManager::isFileReadable(const std::string& filePath) const {
+    struct stat fileStat;
+    if (stat(filePath.c_str(), &fileStat) != 0) {
+        return false;
+    }
+    
+    // Check read permission for owner, group, or others
+    if (fileStat.st_mode & S_IRUSR) return true;
+    if (fileStat.st_mode & S_IRGRP) return true;
+    if (fileStat.st_mode & S_IROTH) return true;
+    
+    return false;
+}
+
+bool FileManager::isFileWritable(const std::string& filePath) const {
+    struct stat dirStat;
+    std::string dirPath = filePath;
+    size_t lastSlash = filePath.rfind('/');
+    
+    if (lastSlash != std::string::npos) {
+        dirPath = filePath.substr(0, lastSlash);
+    }
+    
+    // Check if directory exists and is writable
+    if (stat(dirPath.c_str(), &dirStat) != 0) {
+        return false;
+    }
+    
+    if (!S_ISDIR(dirStat.st_mode)) {
+        return false;
+    }
+    
+    // Check write permission for directory
+    if (dirStat.st_mode & S_IWUSR) return true;
+    if (dirStat.st_mode & S_IWGRP) return true;
+    if (dirStat.st_mode & S_IWOTH) return true;
+    
+    return false;
+}
 
 std::string FileManager::escapeJsonString(const std::string& str) const {
     return nlohmann::detail::escape(str);
@@ -18,6 +75,13 @@ std::string FileManager::escapeJsonString(const std::string& str) const {
 std::optional<std::vector<std::shared_ptr<Task>>> FileManager::loadTodoList() {
     try {
         std::vector<std::shared_ptr<Task>> tasks;
+        
+        // Check file permissions before attempting to read
+        if (!isFileReadable(todoFilePath_)) {
+            Logger::log(Logger::LogLevel::WARNING, "Todo list file is not readable. Check file permissions.");
+            return std::nullopt;
+        }
+        
         std::ifstream file(todoFilePath_);
 
         if (!isValidFilePath(todoFilePath_)) {
@@ -79,6 +143,12 @@ std::optional<std::vector<std::shared_ptr<Task>>> FileManager::loadTodoList() {
 
         file.close();
 
+        // Check write permission before saving
+        if (!isFileWritable(todoFilePath_)) {
+            Logger::log(Logger::LogLevel::WARNING, "Todo list file is not writable. Check file permissions.");
+            return std::nullopt;
+        }
+
         // Build lookup table for ID → Task*
         std::unordered_map<int, std::shared_ptr<Task>> lookup;
         for (auto& t : tasks) {
@@ -115,6 +185,12 @@ std::optional<std::vector<std::shared_ptr<Task>>> FileManager::loadTodoList() {
 
 bool FileManager::saveTodoList(const std::vector<std::shared_ptr<Task>>& tasks) {
     try {
+        // Check file permissions before attempting to write
+        if (!isFileWritable(todoFilePath_)) {
+            Logger::log(Logger::LogLevel::ERROR, "Todo list file is not writable. Check file permissions.");
+            return false;
+        }
+        
         std::ofstream file(todoFilePath_);
 
         if (!isValidFilePath(todoFilePath_)) {
