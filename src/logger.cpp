@@ -17,5 +17,9 @@ void Logger::log(LogLevel level, const std::string& message) {
         case LogLevel::FATAL:
             UI::instance().println("[FATAL] " + message, Color::Red);
             break;
+        default:
+            std::string error_message = "log level is unknown or is invalid";
+            UI::instance().println("[ERROR] " + error_message, Color::Red);
+            break;
     }
 }
